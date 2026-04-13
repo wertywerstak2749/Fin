@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Финансы</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#020617">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+  <h1>Финансы</h1>
+
+  <div class="summary">
+    <div class="card">
+      <div>Доходы</div>
+      <div id="total-income">0 ₽</div>
+    </div>
+    <div class="card">
+      <div>Расходы</div>
+      <div id="total-expense">0 ₽</div>
+    </div>
+    <div class="card">
+      <div>Баланс</div>
+      <div id="balance">0 ₽</div>
+    </div>
+  </div>
+
+  <form id="form">
+    <select id="type">
+      <option value="income">Доход</option>
+      <option value="expense">Расход</option>
+    </select>
+
+    <input type="number" id="amount" placeholder="Сумма">
+    <input type="date" id="date">
+
+    <button>Добавить</button>
+  </form>
+
+  <canvas id="chart"></canvas>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Дата</th>
+        <th>Тип</th>
+        <th>Сумма</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="list"></tbody>
+  </table>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
