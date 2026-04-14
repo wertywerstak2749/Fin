@@ -1,62 +1,146 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Финансы</title>
-
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#020617">
-  <link rel="apple-touch-icon" href="icon.png">
-
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Калькулятор дохода 40% с историей</title>
+  <style>
+    body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;padding:0 16px;background:#f6f7fb;color:#1f2937}
+    .card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.08);margin-bottom:20px}
+    h1{margin-top:0}
+    label{display:block;margin:16px 0 8px;font-weight:700}
+    input{width:100%;padding:14px 16px;border:1px solid #d1d5db;border-radius:12px;font-size:16px;box-sizing:border-box}
+    button{margin-top:18px;background:#2563eb;color:#fff;border:0;border-radius:12px;padding:14px 18px;font-size:16px;cursor:pointer}
+    button:hover{background:#1d4ed8}
+    .result{margin-top:20px;padding:18px;border-radius:12px;background:#eef2ff}
+    .big{font-size:28px;font-weight:800}
+    .hint{color:#6b7280;font-size:14px;margin-top:8px}
+    .history{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-top:20px}
+    .history h3{margin:0 0 12px}
+    .entry{padding:12px 0;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center}
+    .entry:last-child{border-bottom:0}
+    .date{font-size:14px;color:#6b7280}
+    .clear-btn{background:#ef4444;color:#fff;border:0;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;margin-top:12px;float:right}
+    .clear-btn:hover{background:#dc2626}
+    .total{padding:16px;background:#d1fae5;border-radius:12px;margin-top:16px;text-align:center}
+    .total .big{color:#059669}
+    .empty{padding:20px;text-align:center;color:#9ca3af}
+  </style>
 </head>
 <body>
+  <div class="card">
+    <h1>Калькулятор дохода 40%</h1>
+    <p>Вводишь полный доход, видишь 40% свою долю. История сохраняется в браузере.</p>
 
-<div class="app">
-  <h1>Финансы</h1>
+    <label for="income">Полный доход</label>
+    <input id="income" type="number" min="0" step="0.01" placeholder="Например: 10000" />
 
-  <div class="summary">
-    <div class="card">
-      <div>Доходы</div>
-      <div id="total-income">0 ₽</div>
-    </div>
-    <div class="card">
-      <div>Расходы</div>
-      <div id="total-expense">0 ₽</div>
-    </div>
-    <div class="card">
-      <div>Баланс</div>
-      <div id="balance">0 ₽</div>
+    <button onclick="addEntry()">Добавить в историю</button>
+
+    <div class="result" id="result">
+      <div>Твоя доля:</div>
+      <div class="big" id="amount">0</div>
+      <div class="hint">Это 40% от указанного дохода.</div>
     </div>
   </div>
 
-  <form id="form">
-    <select id="type">
-      <option value="income">Доход</option>
-      <option value="expense">Расход</option>
-    </select>
+  <div class="card history" id="history">
+    <h3>История доходов</h3>
+    <button class="clear-btn" onclick="clearHistory()">🗑️ Очистить историю</button>
+    <div id="entries"></div>
+    <div class="total" id="total">
+      <div><strong>Общий итог:</strong></div>
+      <div class="big" id="totalAmount">0 ₽</div>
+    </div>
+  </div>
 
-    <input type="number" id="amount" placeholder="Сумма">
-    <input type="date" id="date">
-
-    <button>Добавить</button>
-  </form>
-
-  <canvas id="chart"></canvas>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Дата</th>
-        <th>Тип</th>
-        <th>Сумма</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="list"></tbody>
-  </table>
-</div>
-
-<script src="app.js"></script>
+  <script>
+    const STORAGE_KEY = 'incomeHistory_v2';
+    
+    function loadHistory(){
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      } catch(e) {
+        return [];
+      }
+    }
+    
+    function saveHistory(history){
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+      } catch(e) {
+        alert('Ошибка сохранения. Очисти кэш браузера.');
+      }
+    }
+    
+    function renderHistory(){
+      const history = loadHistory();
+      const entriesEl = document.getElementById('entries');
+      const totalEl = document.getElementById('totalAmount');
+      
+      if(history.length === 0){
+        entriesEl.innerHTML = '<div class="empty">История пуста. Добавь первый доход!</div>';
+        totalEl.textContent = '0 ₽';
+        return;
+      }
+      
+      entriesEl.innerHTML = history.map(entry => 
+        `<div class="entry">
+          <div>
+            <div>${entry.date}</div>
+            <div class="hint">${entry.full.toLocaleString()} ₽ → <strong>${entry.share.toLocaleString()} ₽</strong></div>
+          </div>
+        </div>`
+      ).join('');
+      
+      const total = history.reduce((sum, entry) => sum + entry.share, 0);
+      totalEl.textContent = total.toLocaleString() + ' ₽';
+    }
+    
+    function addEntry(){
+      const incomeEl = document.getElementById('income');
+      const income = parseFloat(incomeEl.value);
+      if(!income || income <= 0){
+        alert('Введи корректный доход больше 0');
+        return;
+      }
+      
+      const share = income * 0.4;
+      const now = new Date().toLocaleString('ru-RU', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+      
+      const history = loadHistory();
+      history.unshift({date: now, full: income, share: share});
+      if(history.length > 200) history.splice(200); 
+      saveHistory(history);
+      
+      incomeEl.value = '';
+      document.getElementById('amount').textContent = '0';
+      renderHistory();
+    }
+    
+    function clearHistory(){
+      if(confirm('🗑️ Очистить ВСЮ историю доходов? Это нельзя отменить.')){
+        localStorage.removeItem(STORAGE_KEY);
+        renderHistory();
+      }
+    }
+    
+    document.getElementById('income').addEventListener('input', function(){
+      const income = parseFloat(this.value) || 0;
+      document.getElementById('amount').textContent = income ? (income * 0.4).toLocaleString() + ' ₽' : '0';
+    });
+    
+    document.getElementById('income').addEventListener('keypress', function(e){
+      if(e.key === 'Enter') addEntry();
+    });
+    
+    renderHistory();
+  </script>
 </body>
 </html>
