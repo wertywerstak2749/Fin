@@ -1,146 +1,1161 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Калькулятор дохода 40% с историей</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мой планер</title>
+
   <style>
-    body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;padding:0 16px;background:#f6f7fb;color:#1f2937}
-    .card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.08);margin-bottom:20px}
-    h1{margin-top:0}
-    label{display:block;margin:16px 0 8px;font-weight:700}
-    input{width:100%;padding:14px 16px;border:1px solid #d1d5db;border-radius:12px;font-size:16px;box-sizing:border-box}
-    button{margin-top:18px;background:#2563eb;color:#fff;border:0;border-radius:12px;padding:14px 18px;font-size:16px;cursor:pointer}
-    button:hover{background:#1d4ed8}
-    .result{margin-top:20px;padding:18px;border-radius:12px;background:#eef2ff}
-    .big{font-size:28px;font-weight:800}
-    .hint{color:#6b7280;font-size:14px;margin-top:8px}
-    .history{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-top:20px}
-    .history h3{margin:0 0 12px}
-    .entry{padding:12px 0;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center}
-    .entry:last-child{border-bottom:0}
-    .date{font-size:14px;color:#6b7280}
-    .clear-btn{background:#ef4444;color:#fff;border:0;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;margin-top:12px;float:right}
-    .clear-btn:hover{background:#dc2626}
-    .total{padding:16px;background:#d1fae5;border-radius:12px;margin-top:16px;text-align:center}
-    .total .big{color:#059669}
-    .empty{padding:20px;text-align:center;color:#9ca3af}
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #202536;
+      --muted: #8b94a6;
+      --border: #e4e7ef;
+      --primary: #635bff;
+      --primary-light: #efeeff;
+      --success: #20b77a;
+      --danger: #ed5c6b;
+      --shadow: 0 10px 30px rgba(35, 42, 70, .08);
+    }
+
+    body.dark {
+      --bg: #171923;
+      --card: #222532;
+      --text: #f4f5f7;
+      --muted: #9ba2b1;
+      --border: #383c4c;
+      --primary-light: #302e5c;
+      --shadow: 0 10px 30px rgba(0, 0, 0, .25);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding-bottom: 105px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+      transition: .25s;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    header {
+      padding: 34px 20px;
+      color: white;
+      text-align: center;
+      background: linear-gradient(135deg, #635bff, #8c52d9);
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    header p {
+      margin: 0;
+      opacity: .85;
+    }
+
+    main {
+      width: 100%;
+      max-width: 1250px;
+      margin: auto;
+      padding: 30px 4% 20px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .topbar h2 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    .topbar p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .date-badge {
+      padding: 12px 15px;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .week-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .icon-button,
+    .today-button {
+      padding: 10px 14px;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    .today-button {
+      color: var(--primary);
+    }
+
+    .icon-button:hover,
+    .today-button:hover {
+      border-color: var(--primary);
+    }
+
+    .toolbar input[type="date"],
+    .search {
+      padding: 11px 13px;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      outline: none;
+    }
+
+    .search {
+      width: 240px;
+    }
+
+    /*
+      Дни недели расположены горизонтально.
+      На телефоне их можно прокручивать вбок.
+    */
+    .planner {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(190px, 1fr));
+      gap: 13px;
+      overflow-x: auto;
+      padding: 4px 3px 12px;
+    }
+
+    .day {
+      min-height: 360px;
+      min-width: 190px;
+      padding: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .day.today {
+      border: 2px solid var(--primary);
+    }
+
+    .day-head {
+      padding-bottom: 13px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .day-name {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .day-number {
+      margin: 5px 0 2px;
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .day-date {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /*
+      Окно записи находится прямо внутри конкретного дня.
+    */
+    .day-form {
+      margin-top: 13px;
+      padding: 9px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+    }
+
+    .day-form input[type="text"] {
+      width: 100%;
+      padding: 9px;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      outline: none;
+      font-size: 12px;
+    }
+
+    .day-form-bottom {
+      display: flex;
+      gap: 6px;
+      margin-top: 7px;
+    }
+
+    .day-form input[type="time"] {
+      width: 100%;
+      min-width: 0;
+      padding: 8px 5px;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 11px;
+    }
+
+    .add-day-button {
+      width: 38px;
+      color: white;
+      background: var(--primary);
+      border-radius: 7px;
+      font-size: 19px;
+    }
+
+    .add-day-button:hover {
+      filter: brightness(.9);
+    }
+
+    .task {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      margin-top: 11px;
+      padding: 10px;
+      background: var(--bg);
+      border-radius: 9px;
+      font-size: 13px;
+    }
+
+    .task input[type="checkbox"] {
+      margin-top: 2px;
+      accent-color: var(--primary);
+    }
+
+    .task-text {
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .task.done .task-text {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .task-time {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--primary);
+      font-size: 11px;
+    }
+
+    .delete {
+      padding: 0 3px;
+      color: var(--danger);
+      background: transparent;
+      font-size: 18px;
+    }
+
+    .empty {
+      margin-top: 25px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      flex: 1;
+      padding: 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-number {
+      color: var(--primary);
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .stat-label {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .card {
+      padding: 22px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 20px;
+    }
+
+    .card-description {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .habit-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .habit-form input {
+      flex: 1;
+      padding: 12px;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      outline: none;
+    }
+
+    .primary {
+      padding: 12px 18px;
+      color: white;
+      background: var(--primary);
+      border-radius: 9px;
+    }
+
+    .primary:hover {
+      filter: brightness(.92);
+    }
+
+    .habit-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .habit {
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 13px;
+    }
+
+    .habit-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .habit-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: bold;
+    }
+
+    .habit-icon {
+      display: grid;
+      place-items: center;
+      width: 31px;
+      height: 31px;
+      color: var(--primary);
+      background: var(--primary-light);
+      border-radius: 9px;
+    }
+
+    .habit-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 7px;
+      margin-top: 15px;
+    }
+
+    .habit-day {
+      display: grid;
+      justify-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .habit-day input {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--success);
+      cursor: pointer;
+    }
+
+    .habit-progress {
+      height: 6px;
+      margin-top: 14px;
+      overflow: hidden;
+      background: var(--border);
+      border-radius: 10px;
+    }
+
+    .habit-progress div {
+      height: 100%;
+      background: var(--success);
+      transition: .3s;
+    }
+
+    .bottom-navigation {
+      position: fixed;
+      z-index: 10;
+      left: 50%;
+      bottom: 18px;
+      display: flex;
+      gap: 8px;
+      width: max-content;
+      padding: 8px;
+      transform: translateX(-50%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .15);
+    }
+
+    .bottom-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      color: var(--muted);
+      background: transparent;
+      border-radius: 12px;
+    }
+
+    .bottom-button.active {
+      color: white;
+      background: var(--primary);
+    }
+
+    .theme-button {
+      position: fixed;
+      z-index: 3;
+      top: 18px;
+      right: 18px;
+      padding: 9px 12px;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    @media (max-width: 650px) {
+      body {
+        padding-bottom: 100px;
+      }
+
+      header {
+        padding: 29px 15px;
+      }
+
+      header h1 {
+        font-size: 25px;
+      }
+
+      main {
+        padding: 25px 12px 20px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .topbar h2 {
+        font-size: 25px;
+      }
+
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .search {
+        width: 100%;
+      }
+
+      .stats {
+        flex-direction: column;
+      }
+
+      .habit-form {
+        flex-direction: column;
+      }
+
+      .bottom-navigation {
+        width: calc(100% - 24px);
+        justify-content: space-around;
+      }
+
+      .bottom-button {
+        flex: 1;
+        justify-content: center;
+        padding: 11px 8px;
+      }
+
+      .theme-button {
+        top: 12px;
+        right: 12px;
+      }
+    }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <h1>Калькулятор дохода 40%</h1>
-    <p>Вводишь полный доход, видишь 40% свою долю. История сохраняется в браузере.</p>
 
-    <label for="income">Полный доход</label>
-    <input id="income" type="number" min="0" step="0.01" placeholder="Например: 10000" />
+  <header>
+    <h1>Мой органайзер</h1>
+    <p>Планируйте дела и формируйте полезные привычки</p>
+  </header>
 
-    <button onclick="addEntry()">Добавить в историю</button>
+  <button class="theme-button" onclick="toggleTheme()">◐ Тема</button>
 
-    <div class="result" id="result">
-      <div>Твоя доля:</div>
-      <div class="big" id="amount">0</div>
-      <div class="hint">Это 40% от указанного дохода.</div>
+  <main>
+    <div class="topbar">
+      <div>
+        <h2 id="pageTitle">Планер</h2>
+        <p id="pageDescription">
+          Записывайте планы прямо в окно нужного дня
+        </p>
+      </div>
+
+      <div class="date-badge" id="currentDate"></div>
     </div>
-  </div>
 
-  <div class="card history" id="history">
-    <h3>История доходов</h3>
-    <button class="clear-btn" onclick="clearHistory()">🗑️ Очистить историю</button>
-    <div id="entries"></div>
-    <div class="total" id="total">
-      <div><strong>Общий итог:</strong></div>
-      <div class="big" id="totalAmount">0 ₽</div>
-    </div>
-  </div>
+    <!-- СТРАНИЦА ПЛАНЕРА -->
+    <section id="planner" class="page active">
+
+      <div class="toolbar">
+        <div class="week-controls">
+          <button class="icon-button" onclick="changeWeek(-7)">
+            ←
+          </button>
+
+          <button class="today-button" onclick="goToday()">
+            Сегодня
+          </button>
+
+          <button class="icon-button" onclick="changeWeek(7)">
+            →
+          </button>
+
+          <input type="date" id="weekStart">
+        </div>
+
+        <input
+          class="search"
+          id="searchInput"
+          type="search"
+          placeholder="Поиск задач..."
+          oninput="renderPlanner()"
+        >
+      </div>
+
+      <div class="planner" id="plannerGrid"></div>
+    </section>
+
+    <!-- СТРАНИЦА ПРИВЫЧЕК -->
+    <section id="habits" class="page">
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number" id="habitCount">0</div>
+          <div class="stat-label">Всего привычек</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-number" id="habitDone">0%</div>
+          <div class="stat-label">Прогресс недели</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Мои привычки</h3>
+        <p class="card-description">
+          Отмечайте выполнение привычек по дням недели
+        </p>
+
+        <div class="habit-form">
+          <input
+            id="habitInput"
+            type="text"
+            placeholder="Например: читать 20 минут"
+          >
+
+          <button class="primary" onclick="addHabit()">
+            Добавить привычку
+          </button>
+        </div>
+
+        <div class="toolbar">
+          <div class="week-controls">
+            <button class="icon-button" onclick="changeHabitWeek(-7)">
+              ←
+            </button>
+
+            <button class="today-button" onclick="habitToday()">
+              Сегодня
+            </button>
+
+            <button class="icon-button" onclick="changeHabitWeek(7)">
+              →
+            </button>
+          </div>
+
+          <input type="date" id="habitWeekStart">
+        </div>
+
+        <div class="habit-list" id="habitList"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- НИЖНЕЕ МЕНЮ -->
+  <nav class="bottom-navigation">
+    <button
+      class="bottom-button active"
+      onclick="showPage('planner', this)"
+    >
+      <span>▦</span>
+      <span>Планер</span>
+    </button>
+
+    <button
+      class="bottom-button"
+      onclick="showPage('habits', this)"
+    >
+      <span>◉</span>
+      <span>Привычки</span>
+    </button>
+  </nav>
 
   <script>
-    const STORAGE_KEY = 'incomeHistory_v2';
-    
-    function loadHistory(){
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      } catch(e) {
-        return [];
-      }
-    }
-    
-    function saveHistory(history){
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-      } catch(e) {
-        alert('Ошибка сохранения. Очисти кэш браузера.');
-      }
-    }
-    
-    function renderHistory(){
-      const history = loadHistory();
-      const entriesEl = document.getElementById('entries');
-      const totalEl = document.getElementById('totalAmount');
-      
-      if(history.length === 0){
-        entriesEl.innerHTML = '<div class="empty">История пуста. Добавь первый доход!</div>';
-        totalEl.textContent = '0 ₽';
-        return;
-      }
-      
-      entriesEl.innerHTML = history.map(entry => 
-        `<div class="entry">
-          <div>
-            <div>${entry.date}</div>
-            <div class="hint">${entry.full.toLocaleString()} ₽ → <strong>${entry.share.toLocaleString()} ₽</strong></div>
-          </div>
-        </div>`
-      ).join('');
-      
-      const total = history.reduce((sum, entry) => sum + entry.share, 0);
-      totalEl.textContent = total.toLocaleString() + ' ₽';
-    }
-    
-    function addEntry(){
-      const incomeEl = document.getElementById('income');
-      const income = parseFloat(incomeEl.value);
-      if(!income || income <= 0){
-        alert('Введи корректный доход больше 0');
-        return;
-      }
-      
-      const share = income * 0.4;
-      const now = new Date().toLocaleString('ru-RU', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit' 
+    let tasks = JSON.parse(localStorage.getItem("plannerTasks")) || [];
+    let habits = JSON.parse(localStorage.getItem("plannerHabits")) || [];
+
+    const today = new Date();
+    const todayString = formatDate(today);
+
+    const weekStartInput = document.getElementById("weekStart");
+    const habitWeekStartInput =
+      document.getElementById("habitWeekStart");
+
+    weekStartInput.value = getMonday(today);
+    habitWeekStartInput.value = getMonday(today);
+
+    document.getElementById("currentDate").textContent =
+      today.toLocaleDateString("ru-RU", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
       });
-      
-      const history = loadHistory();
-      history.unshift({date: now, full: income, share: share});
-      if(history.length > 200) history.splice(200); 
-      saveHistory(history);
-      
-      incomeEl.value = '';
-      document.getElementById('amount').textContent = '0';
-      renderHistory();
+
+    weekStartInput.addEventListener("change", renderPlanner);
+    habitWeekStartInput.addEventListener("change", renderHabits);
+
+    document.getElementById("habitInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        addHabit();
+      }
+    });
+
+    function formatDate(date) {
+      return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0")
+      ].join("-");
     }
-    
-    function clearHistory(){
-      if(confirm('🗑️ Очистить ВСЮ историю доходов? Это нельзя отменить.')){
-        localStorage.removeItem(STORAGE_KEY);
-        renderHistory();
+
+    function parseDate(value) {
+      const [year, month, day] = value.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function getMonday(date) {
+      const result = new Date(date);
+      const day = result.getDay();
+
+      result.setDate(
+        result.getDate() + (day === 0 ? -6 : 1 - day)
+      );
+
+      return formatDate(result);
+    }
+
+    function addDays(value, amount) {
+      const date = parseDate(value);
+      date.setDate(date.getDate() + amount);
+      return formatDate(date);
+    }
+
+    function getDateInfo(value) {
+      const date = parseDate(value);
+
+      return {
+        day: date.getDate(),
+        month: date.toLocaleDateString("ru-RU", {
+          month: "long"
+        }),
+        weekday: date.toLocaleDateString("ru-RU", {
+          weekday: "short"
+        })
+      };
+    }
+
+    function showPage(pageId, button) {
+      document.querySelectorAll(".page").forEach(page => {
+        page.classList.remove("active");
+      });
+
+      document.querySelectorAll(".bottom-button").forEach(item => {
+        item.classList.remove("active");
+      });
+
+      document.getElementById(pageId).classList.add("active");
+      button.classList.add("active");
+
+      if (pageId === "planner") {
+        document.getElementById("pageTitle").textContent = "Планер";
+        document.getElementById("pageDescription").textContent =
+          "Записывайте планы прямо в окно нужного дня";
+
+        renderPlanner();
+      } else {
+        document.getElementById("pageTitle").textContent = "Привычки";
+        document.getElementById("pageDescription").textContent =
+          "Отмечайте полезные действия каждый день";
+
+        renderHabits();
+      }
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+
+    function changeWeek(amount) {
+      weekStartInput.value =
+        addDays(weekStartInput.value, amount);
+
+      renderPlanner();
+    }
+
+    function goToday() {
+      weekStartInput.value = getMonday(today);
+      renderPlanner();
+    }
+
+    function changeHabitWeek(amount) {
+      habitWeekStartInput.value =
+        addDays(habitWeekStartInput.value, amount);
+
+      renderHabits();
+    }
+
+    function habitToday() {
+      habitWeekStartInput.value = getMonday(today);
+      renderHabits();
+    }
+
+    /*
+      Задача добавляется в конкретный день.
+      Дата передаётся из карточки этого дня автоматически.
+    */
+    function addTask(date, inputId, timeId) {
+      const textInput = document.getElementById(inputId);
+      const timeInput = document.getElementById(timeId);
+
+      const text = textInput.value.trim();
+      const time = timeInput.value;
+
+      if (!text) {
+        textInput.focus();
+        return;
+      }
+
+      tasks.push({
+        id: Date.now(),
+        text: text,
+        date: date,
+        time: time,
+        done: false
+      });
+
+      localStorage.setItem("plannerTasks", JSON.stringify(tasks));
+
+      textInput.value = "";
+      timeInput.value = "";
+
+      renderPlanner();
+    }
+
+    function toggleTask(id) {
+      const task = tasks.find(item => item.id === id);
+
+      if (task) {
+        task.done = !task.done;
+      }
+
+      localStorage.setItem("plannerTasks", JSON.stringify(tasks));
+      renderPlanner();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(item => item.id !== id);
+
+      localStorage.setItem("plannerTasks", JSON.stringify(tasks));
+      renderPlanner();
+    }
+
+    function renderPlanner() {
+      const grid = document.getElementById("plannerGrid");
+      const search = document
+        .getElementById("searchInput")
+        .value
+        .toLowerCase();
+
+      grid.innerHTML = "";
+
+      const weekdays = [
+        "Понедельник",
+        "Вторник",
+        "Среда",
+        "Четверг",
+        "Пятница",
+        "Суббота",
+        "Воскресенье"
+      ];
+
+      for (let i = 0; i < 7; i++) {
+        const date = addDays(weekStartInput.value, i);
+        const info = getDateInfo(date);
+
+        const inputId = `task-input-${date}`;
+        const timeId = `time-input-${date}`;
+
+        const dayTasks = tasks
+          .filter(task => task.date === date)
+          .filter(task =>
+            task.text.toLowerCase().includes(search)
+          )
+          .sort((a, b) => a.time.localeCompare(b.time));
+
+        const day = document.createElement("div");
+        day.className = "day";
+
+        if (date === todayString) {
+          day.classList.add("today");
+        }
+
+        day.innerHTML = `
+          <div class="day-head">
+            <div class="day-name">${weekdays[i]}</div>
+            <div class="day-number">${info.day}</div>
+            <div class="day-date">${info.month}</div>
+          </div>
+
+          <div class="day-form">
+            <input
+              id="${inputId}"
+              type="text"
+              placeholder="Записать план..."
+            >
+
+            <div class="day-form-bottom">
+              <input
+                id="${timeId}"
+                type="time"
+              >
+
+              <button
+                class="add-day-button"
+                title="Добавить план"
+                onclick="addTask('${date}', '${inputId}', '${timeId}')"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        `;
+
+        if (!dayTasks.length) {
+          day.innerHTML += `
+            <div class="empty">Планов пока нет</div>
+          `;
+        }
+
+        dayTasks.forEach(task => {
+          const item = document.createElement("div");
+          item.className = "task";
+
+          if (task.done) {
+            item.classList.add("done");
+          }
+
+          item.innerHTML = `
+            <input
+              type="checkbox"
+              ${task.done ? "checked" : ""}
+              onchange="toggleTask(${task.id})"
+            >
+
+            <div class="task-text">
+              ${
+                task.time
+                  ? `<span class="task-time">${task.time}</span>`
+                  : ""
+              }
+
+              ${escapeHtml(task.text)}
+            </div>
+
+            <button
+              class="delete"
+              onclick="deleteTask(${task.id})"
+              title="Удалить"
+            >
+              ×
+            </button>
+          `;
+
+          day.appendChild(item);
+        });
+
+        const input = day.querySelector(`#${inputId}`);
+
+        input.addEventListener("keydown", event => {
+          if (event.key === "Enter") {
+            addTask(date, inputId, timeId);
+          }
+        });
+
+        grid.appendChild(day);
       }
     }
-    
-    document.getElementById('income').addEventListener('input', function(){
-      const income = parseFloat(this.value) || 0;
-      document.getElementById('amount').textContent = income ? (income * 0.4).toLocaleString() + ' ₽' : '0';
-    });
-    
-    document.getElementById('income').addEventListener('keypress', function(e){
-      if(e.key === 'Enter') addEntry();
-    });
-    
-    renderHistory();
+
+    function addHabit() {
+      const input = document.getElementById("habitInput");
+      const name = input.value.trim();
+
+      if (!name) {
+        input.focus();
+        return;
+      }
+
+      habits.push({
+        id: Date.now(),
+        name: name,
+        days: {}
+      });
+
+      input.value = "";
+
+      localStorage.setItem("plannerHabits", JSON.stringify(habits));
+      renderHabits();
+    }
+
+    function toggleHabit(id, date) {
+      const habit = habits.find(item => item.id === id);
+
+      if (!habit) {
+        return;
+      }
+
+      habit.days[date] = !habit.days[date];
+
+      localStorage.setItem("plannerHabits", JSON.stringify(habits));
+      renderHabits();
+    }
+
+    function deleteHabit(id) {
+      habits = habits.filter(item => item.id !== id);
+
+      localStorage.setItem("plannerHabits", JSON.stringify(habits));
+      renderHabits();
+    }
+
+    function renderHabits() {
+      const list = document.getElementById("habitList");
+      const start = habitWeekStartInput.value;
+
+      list.innerHTML = "";
+
+      if (!habits.length) {
+        list.innerHTML = `
+          <div class="empty">
+            Добавьте первую привычку
+          </div>
+        `;
+      }
+
+      habits.forEach(habit => {
+        let completed = 0;
+        let daysHtml = "";
+
+        for (let i = 0; i < 7; i++) {
+          const date = addDays(start, i);
+          const info = getDateInfo(date);
+          const checked = habit.days[date] ? "checked" : "";
+
+          if (habit.days[date]) {
+            completed++;
+          }
+
+          daysHtml += `
+            <label class="habit-day">
+              ${info.weekday}
+
+              <input
+                type="checkbox"
+                ${checked}
+                onchange="toggleHabit(${habit.id}, '${date}')"
+              >
+
+              ${info.day}
+            </label>
+          `;
+        }
+
+        const percent = Math.round((completed / 7) * 100);
+
+        const item = document.createElement("div");
+        item.className = "habit";
+
+        item.innerHTML = `
+          <div class="habit-top">
+            <div class="habit-title">
+              <span class="habit-icon">✓</span>
+              ${escapeHtml(habit.name)}
+            </div>
+
+            <button
+              class="delete"
+              onclick="deleteHabit(${habit.id})"
+              title="Удалить привычку"
+            >
+              ×
+            </button>
+          </div>
+
+          <div class="habit-days">
+            ${daysHtml}
+          </div>
+
+          <div class="habit-progress">
+            <div style="width: ${percent}%"></div>
+          </div>
+        `;
+
+        list.appendChild(item);
+      });
+
+      updateHabitStats(start);
+    }
+
+    function updateHabitStats(start) {
+      let total = habits.length * 7;
+      let completed = 0;
+
+      habits.forEach(habit => {
+        for (let i = 0; i < 7; i++) {
+          const date = addDays(start, i);
+
+          if (habit.days[date]) {
+            completed++;
+          }
+        }
+      });
+
+      const percent = total
+        ? Math.round((completed / total) * 100)
+        : 0;
+
+      document.getElementById("habitCount").textContent =
+        habits.length;
+
+      document.getElementById("habitDone").textContent =
+        percent + "%";
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+
+      localStorage.setItem(
+        "plannerTheme",
+        document.body.classList.contains("dark")
+          ? "dark"
+          : "light"
+      );
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    if (localStorage.getItem("plannerTheme") === "dark") {
+      document.body.classList.add("dark");
+    }
+
+    renderPlanner();
+    renderHabits();
   </script>
+
 </body>
 </html>
