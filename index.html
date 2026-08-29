@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎈</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&display=swap&quot; rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --ink: #2d2a3f;
@@ -39,7 +39,7 @@
   .bg-emoji:nth-child(3) { top: 18%; right: 6%; animation-delay: .7s; }
   .bg-emoji:nth-child(4) { bottom: 12%; right: 9%; animation-delay: 2.1s; }
   .bg-emoji:nth-child(5) { top: 45%; left: 50%; animation-delay: 1s; }
-  [club66008961|@keyframes] floaty {
+  @keyframes floaty {
     0%, 100% { transform: translateY(0) rotate(-6deg); }
     50% { transform: translateY(-22px) rotate(6deg); }
   }
@@ -99,8 +99,7 @@
     cursor: pointer; outline: none;
   }
   .btn {
-    padding: 12px 20px; border:
-    3px solid var(--ink); border-radius: 16px;
+    padding: 12px 20px; border: 3px solid var(--ink); border-radius: 16px;
     font: 800 14px "Nunito", sans-serif; color: var(--ink);
     background: var(--c-yellow); cursor: pointer;
     box-shadow: 4px 4px 0 var(--ink);
@@ -183,8 +182,7 @@
   .note-area:focus { box-shadow: 4px 4px 0 var(--c-yellow); }
   .note-status { font: 800 12.5px "Nunito", sans-serif; color: #7a7794; margin-top: 10px; height: 16px; }
 
-  .glasses { display: flex;
-  flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+  .glasses { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
   .glass {
     width: 46px; height: 56px; border: 3px solid var(--ink); border-radius: 12px;
     background: #f2f1f8; font-size: 22px; cursor: pointer;
@@ -198,7 +196,7 @@
     filter: none; opacity: 1;
     animation: pop .3s cubic-bezier(.2,.7,.3,1.5);
   }
-  [club66008961|@keyframes] pop { 0% { transform: scale(.6); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
+  @keyframes pop { 0% { transform: scale(.6); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
   .water-count { font: 800 17px "Baloo 2", "Nunito", sans-serif; }
   .water-count b { font-size: 26px; color: #0a8f9e; }
 
@@ -221,7 +219,7 @@
     font: 800 40px "Baloo 2", "Nunito", sans-serif;
   }
   .timer-display.done { animation: blink .5s steps(2) infinite; }
-  [club66008961|@keyframes] blink { 50% { opacity: .35; } }
+  @keyframes blink { 50% { opacity: .35; } }
   .timer-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   .timer-btns .btn { min-width: 70px; }
 
@@ -235,7 +233,7 @@
 
   .empty { font: 700 14px "Nunito", sans-serif; color: #8a87a3; opacity: .8; }
 
-  [id705766|max-width: 760px] {
+  @media (max-width: 760px) {
     .grid { grid-template-columns: 1fr; }
     .span2 { grid-column: span 1; }
     .bg-emoji { display: none; }
@@ -281,8 +279,7 @@
     </div>
 
     <div class="card span2 sh-orange">
-      <div class="w-head"><div class="chip"
-      style="background:var(--c-orange)">⏳</div><h2>Скоро случится</h2></div>
+      <div class="w-head"><div class="chip" style="background:var(--c-orange)">⏳</div><h2>Скоро случится</h2></div>
       <div class="events-grid" id="eventsGrid"></div>
       <div class="event-form">
         <input type="text" id="eventName" placeholder="Событие, например: День рождения" maxlength="50">
@@ -364,15 +361,15 @@
     else if (h < 18) { g = "Добрый день!"; e = "🌤"; }
     else if (h < 23) { g = "Добрый вечер!"; e = "🌆"; }
     else { g = "Доброй ночи!"; e = "🌙"; }
-    greetEl.textContent = g + " "+ e;
+    greetEl.textContent = g + " " + e;
   }
   tickClock();
   setInterval(tickClock, 1000);
 
   var ENGINES = {
-    g: "https://www.google.com/search?q=&quot;,
-    y: "https://www.youtube.com/results?search_query=&quot;,
-    ya: "https://yandex.ru/search/?text=&quot;
+    g: "https://www.google.com/search?q=",
+    y: "https://www.youtube.com/results?search_query=",
+    ya: "https://yandex.ru/search/?text="
   };
   function doSearch() {
     var q = document.getElementById("searchInput").value.trim();
@@ -468,7 +465,7 @@
       days.className = "days";
       var lbl = document.createElement("div");
       lbl.className = "lbl";
-      if (diff > 0) { days.textContent = diff; lbl.textContent= plural(diff) + " осталось"; }
+      if (diff > 0) { days.textContent = diff; lbl.textContent = plural(diff) + " осталось"; }
       else if (diff === 0) { days.textContent = "🎉"; lbl.textContent = "уже сегодня!"; }
       else { days.textContent = Math.abs(diff); lbl.textContent = "дней назад"; }
       var nm = document.createElement("div");
@@ -581,7 +578,8 @@
   var total = 300, left = 300, running = false, endAt = 0, tickId = null;
   function fmt(s) { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ":" + pad(s % 60); }
   function paint() {
-    timerText.textContent = fmt(left);ring.style.strokeDashoffset = CIRC * (1 - left / total);
+    timerText.textContent = fmt(left);
+    ring.style.strokeDashoffset = CIRC * (1 - left / total);
   }
   function stopTick() { clearInterval(tickId); tickId = null; running = false; toggleBtn.textContent = "Старт ▶"; }
   function setTimer(sec) {
