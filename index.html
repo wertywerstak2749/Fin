@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Самое важное для телефонов: запрещает зум и подстраивает масштаб -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Учёт рабочего времени</title>
+    <style>
+      :root {
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --text: #1e293b;
+        --border: #e2e8f0;
+        --danger: #ef4444;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 12px;
+      }
+
+      .container {
+        max-width: 100%;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        font-size: 20px;
+        margin: 0 0 6px 0;
+      }
+
+      p.subtitle {
+        color: #64748b;
+        font-size: 13px;
+      }
+
+      /* Кнопки: большие, чтобы удобно было нажимать пальцем */
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        padding: 14px 16px; /* крупнее, чем обычно */
+        border: none;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-add {
+        background-color: var(--primary);
+        color: white;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .btn-add:hover {
+        background-color: var(--primary-hover);
+      }
+
+      .btn-clear {
+        background: #fff;
+        color: #64748b;
+        border: 1px solid var(--border);
+        flex: 1;
+        min-width: 0;
+      }
+
+      .btn-clear:hover {
+        border-color: #ccc;
+      }
+
+      /* Адаптивная таблица: на телефоне поля могут вставать в колонку */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--surface);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      th {
+        background-color: var(--primary);
+        color: white;
+        text-align: left;
+        padding: 12px;
+        font-weight: 500;
+        font-size: 13px;
+        text-transform: uppercase;
+      }
+
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 12px;
+      }
+
+      /* Поля ввода: крупные, чтобы попадать пальцем */
+      input, select {
+        width: 100%;
+        padding: 14px; /* большие поля для телефона */
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 16px;
+        box-sizing: border-box;
+        line-height: 1.4;
+      }
+
+      input:focus, select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      }
+
+      .total-row {
+        background-color: #f1f5f9;
+        font-weight: bold;
+        color: var(--primary);
+      }
+
+      /* Кнопка удаления: компактная, но заметная */
+      .btn-delete {
+        background-color: var(--danger);
+        color: white;
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+
+      .btn-delete:hover {
+        background-color: #dc2626;
+      }
+
+      /* МОБИЛЬНАЯ АДАПТАЦИЯ: на очень узких экранах делаем карточки вместо таблицы */
+      @media (max-width: 480px) {
+        table, thead, tbody, th, td, tr {
+          display: block;
+        }
+
+        thead {
+          position: absolute;
+          left: -9999px; /* Скрываем шапку таблицы на мобильном */
+        }
+
+        tr {
+          margin-bottom: 16px;
+          background: var(--surface);
+          border-radius: 12px;
+          padding: 12px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        td {
+          border: none;
+          padding: 8px 0;
+          margin-bottom: 8px;
+        }
+
+        /* Подписи к полям делаем через псевдоэлементы (берём из data-label) */
+        td:before {
+          content: attr(data-label);
+          display: block;
+          font-size: 12px;
+          color: #64748b;
+          margin-bottom: 4px;
+          font-weight: 500;
+        }
+
+        .total-row {
+          background: transparent;
+          display: block;
+          width: 100%;
+          text-align: right;
+          margin-top: 16px;
+          padding: 0;
+        }
+
+        .total-row td {
+          padding: 0;
+          border: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Учёт рабочего времени</h1>
+        <p class="subtitle">Адаптировано для iPhone, автосохранение</p>
+      </header>
+
+      <div class="controls">
+        <button class="btn-add" onclick="addRow()">+ Добавить день</button>
+        <button class="btn-clear" onclick="clearAll()">Очистить всё</button>
+      </div>
+
+      <table id="workTable">
+        <thead>
+          <tr>
+            <th style="width: 12%;">День недели</th>
+            <th style="width: 10%;">Дата</th>
+            <th style="width: 12%;">Начало</th>
+            <th style="width: 10%;">Обед (мин)</th>
+            <th style="width: 12%;">Конец</th>
+            <th style="width: 18%;">Отработано</th>
+            <th style="width: 6%;">Действие</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <!-- Строки будут добавляться через JS -->
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="5" style="text-align: right;">Итого за неделю:</td>
+            <td id="weeklyTotal"><input type="text" readonly style="border:none; background:transparent; font-weight:bold; text-align:right;" /></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <script>
+      const STORAGE_KEY = 'work_tracker_rows';
+
+      function timeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+      }
+
+      function minutesToTimeString(totalMinutes) {
+        if (totalMinutes < 0) return '0 ч 0 мин';
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
+        return `${h} ч ${String(m).padStart(2, '0')} мин`;
+      }
+
+      // Создаём HTML строки. Для мобильной версии используем data-label, чтобы подписи были видны
+      function createRowHtml(rowData = null) {
+        return `
+          <tr>
+            <td data-label="День"><input type="text" placeholder="Пн/Вт/Ср..." value="${rowData?.day || ''}" oninput="onInput(this)" /></td>
+            <td data-label="Дата"><input type="date" value="${rowData?.date || ''}" oninput="onInput(this)" /></td>
+            <td data-label="Начало"><input type="time" placeholder="09:00" value="${rowData?.start || ''}" oninput="onInput(this)" /></td>
+            <td data-label="Обед"><input type="number" placeholder="40" min="0" max="120" value="${rowData?.lunch || ''}" oninput="onInput(this)" /></td>
+            <td data-label="Конец"><input type="time" placeholder="18:10" value="${rowData?.end || ''}" oninput="onInput(this)" /></td>
+            <td class="total-cell"><input type="text" readonly placeholder="— ч — мин" value="${rowData?.worked || ''}" /></td>
+            <td style="${window.innerWidth <= 480 ? 'text-align:right' : ''}">
+              <button class="btn-delete" onclick="deleteRow(this)">✕</button>
+            </td>
+          </tr>`;
+      }
+
+      function onInput(input) {
+        calculateRow(input.closest('tr'));
+        saveRows();
+      }
+
+      function calculateRow(row) {
+        const startInput = row.querySelector('input[type="time"]:nth-of-type(1)');
+        const endInput = row.querySelector('input[type="time"]:nth-of-type(2)');
+        const lunchInput = row.querySelector('input[type="number"]');
+        const totalInput = row.querySelector('.total-cell input');
+
+        const start = timeToMinutes(startInput.value);
+        const end = timeToMinutes(endInput.value);
+        const lunch = parseInt(lunchInput.value) || 0;
+
+        if (!startInput.value || !endInput.value) {
+          totalInput.value = '';
+          updateWeeklyTotal();
+          return;
+        }
+
+        let workedMinutes = end - start - lunch;
+        if (workedMinutes < 0) workedMinutes = 0;
+
+        totalInput.value = minutesToTimeString(workedMinutes);
+        updateWeeklyTotal();
+      }
+
+      function updateWeeklyTotal() {
+        const totals = document.querySelectorAll('.total-cell input');
+        let totalMinutes = 0;
+
+        totals.forEach(input => {
+          const val = input.value;
+          if (!val) return;
+          const parts = val.match(/(\d+) ч (\d+) мин/);
+          if (parts) {
+            totalMinutes += parseInt(parts[1]) * 60 + parseInt(parts[2]);
+          }
+        });
+
+        document.getElementById('weeklyTotal').querySelector('input').value = minutesToTimeString(totalMinutes);
+      }
+
+      function addRow() {
+        const tbody = document.getElementById('tbody');
+        tbody.insertAdjacentHTML('beforeend', createRowHtml());
+        saveRows();
+      }
+
+      function deleteRow(button) {
+        button.closest('tr').remove();
+        saveRows();
+        updateWeeklyTotal();
+      }
+
+      function saveRows() {
+        const rows = Array.from(document.querySelectorAll('#tbody tr')).map(row => ({
+          day: row.querySelector('input:nth-of-type(1)').value,
+          date: row.querySelector('input[type="date"]').value,
+          start: row.querySelector('input[type="time"]:nth-of-type(1)').value,
+          lunch: row.querySelector('input[type="number"]').value,
+          end: row.querySelector('input[type="time"]:nth-of-type(2)').value,
+          worked: row.querySelector('.total-cell input').value
+        }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+      }
+
+      function loadRows() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const tbody = document.getElementById('tbody');
+        if (saved) {
+          const rows = JSON.parse(saved);
+          rows.forEach(row => {
+            tbody.insertAdjacentHTML('beforeend', createRowHtml(row));
+          });
+        } else {
+          // Если нет сохранённых данных — создаём одну пустую строку
+          tbody.innerHTML = createRowHtml();
+        }
+        updateWeeklyTotal();
+      }
+
+      function clearAll() {
+        if(confirm('Вы уверены, что хотите удалить все данные?')) {
+          document.getElementById('tbody').innerHTML = '';
+          addRow();
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+
+      loadRows();
+    </script>
+  </body>
+</html>
