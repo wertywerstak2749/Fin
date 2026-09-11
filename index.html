@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Учёт работы</title>
+    <style>
+      :root {
+        --primary: #6366f1;
+        --bg: #f3f4f6;
+        --surface: #ffffff;
+        --text: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --danger: #ef4444;
+        --success: #10b981;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 12px;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
+      .subtitle { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 16px; }
+
+      /* Сводка */
+      .summary { display: flex; gap: 10px; margin-bottom: 16px; }
+      .summary-card {
+        flex: 1; background: var(--surface); border-radius: 12px;
+        padding: 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      }
+      .summary-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+      .summary-card .value { font-size: 18px; font-weight: 700; }
+      .summary-card.hours .value { color: var(--primary); }
+      .summary-card.money .value { color: var(--success); }
+
+      /* Форма ввода */
+      .form-card {
+        background: var(--surface); border-radius: 14px; padding: 16px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 16px;
+      }
+      .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
+      .form-field { flex: 1; }
+      .form-field label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; font-weight: 500; }
+      input {
+        width: 100%; padding: 14px; border: 1px solid var(--border);
+        border-radius: 10px; font-size: 16px; box-sizing: border-box;
+      }
+      input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+
+      /* Кнопки */
+      .btn {
+        padding: 16px; border: none; border-radius: 12px;
+        font-weight: 600; font-size: 16px; cursor: pointer; width: 100%;
+        transition: opacity 0.2s;
+      }
+      .btn:active { opacity: 0.7; }
+      .btn-primary { background: var(--primary); color: #fff; }
+      .btn-clear { background: #fff; color: var(--muted); border: 1px solid var(--border); margin-top: 8px; }
+
+      /* Превью расчёта */
+      .preview {
+        background: #f0f0ff; border-radius: 10px; padding: 12px 14px;
+        margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+      }
+      .preview .pv-time { font-weight: 700; color: var(--primary); font-size: 16px; }
+      .preview .pv-money { font-weight: 700; color: var(--success); font-size: 16px; }
+      .preview .pv-label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+
+      /* История */
+      .history-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+      .history-list { display: flex; flex-direction: column; gap: 8px; }
+      .h-card {
+        background: var(--surface); border-radius: 12px; padding: 14px 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      .h-card .h-left .h-date { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+      .h-card .h-left .h-time { font-size: 13px; color: var(--muted); }
+      .h-card .h-right { text-align: right; }
+      .h-card .h-right .h-hours { font-weight: 700; color: var(--primary); font-size: 15px; }
+      .h-card .h-right .h-money { font-weight: 700; color: var(--success); font-size: 15px; }
+      .h-delete {
+        background: transparent; border: 1px solid var(--border);
+        color: var(--danger); padding: 6px 12px; border-radius: 8px;
+        font-size: 13px; margin-left: 10px; cursor: pointer;
+      }
+      .empty { text-align: center; color: var(--muted); padding: 24px; font-size: 14px; }
+
+      /* Ставка */
+      .rate-card {
+        background: var(--surface); border-radius: 12px; padding: 14px;
+        margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        display: flex; align-items: center; gap: 10px;
+      }
+      .rate-card label { font-size: 15px; font-weight: 600; white-space: nowrap; }
+      .rate-card input { flex: 1; }
+
+      @media (max-width: 400px) {
+        .form-row { flex-direction: column; gap: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Учёт работы</h1>
+    <p class="subtitle">Добавляй день — часы и деньги считаются сами</p>
+
+    <!-- Сводка -->
+    <div class="summary">
+      <div class="summary-card hours">
+        <div class="label">Всего часов</div>
+        <div class="value" id="totalHours">0 ч 00 мин</div>
+      </div>
+      <div class="summary-card money">
+        <div class="label">Всего заработано</div>
+        <div class="value" id="totalMoney">0 ₽</div>
+      </div>
+    </div>
+
+    <!-- Ставка -->
+    <div class="rate-card">
+      <label>Ставка ₽/час:</label>
+      <input type="number" id="rate" value="300" min="0" oninput="saveRate()" />
+    </div>
+
+    <!-- Форма добавления -->
+    <div class="form-card">
+      <div class="form-row">
+        <div class="form-field">
+          <label>Дата</label>
+          <input type="date" id="fDate" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Начало</label>
+          <input type="time" id="fStart" value="09:00" oninput="calcPreview()" />
+        </div>
+        <div class="form-field">
+          <label>Обед (мин)</label>
+          <input type="number" id="fLunch" value="40" min="0" oninput="calcPreview()" />
+        </div>
+        <div class="form-field">
+          <label>Конец</label>
+          <input type="time" id="fEnd" value="18:00" oninput="calcPreview()" />
+        </div>
+      </div>
+
+      <div class="preview" id="preview" style="display:none;">
+        <div>
+          <div class="pv-label">Отработано</div>
+          <div class="pv-time" id="pvTime">—</div>
+        </div>
+        <div>
+          <div class="pv-label">Заработано</div>
+          <div class="pv-money" id="pvMoney">—</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="addEntry()">Добавить в историю</button>
+      <button class="btn btn-clear" onclick="clearAll()">Очистить всю историю</button>
+    </div>
+
+    <!-- История -->
+    <div class="history-title">История</div>
+    <div class="history-list" id="history"></div>
+
+    <script>
+      const KEY = 'work_simple_v1';
+
+      function load() {
+        const s = localStorage.getItem(KEY);
+        return s ? JSON.parse(s) : { rate: 300, entries: [] };
+      }
+      function save(data) {
+        localStorage.setItem(KEY, JSON.stringify(data));
+      }
+      function timeToMin(t) {
+        if (!t) return 0;
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + m;
+      }
+      function minToTime(min) {
+        if (min < 0) min = 0;
+        return Math.floor(min / 60) + ' ч ' + String(min % 60).padStart(2, '0') + ' мин';
+      }
+      function minToMoney(min, rate) {
+        return Math.round((min / 60) * rate);
+      }
+      function fmtMoney(v) {
+        return v.toLocaleString('ru-RU') + ' ₽';
+      }
+      function fmtDate(d) {
+        if (!d) return 'Без даты';
+        const date = new Date(d);
+        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+      }
+      function calc(start, lunch, end) {
+        const s = timeToMin(start);
+        const e = timeToMin(end);
+        let worked = e - s - (parseInt(lunch) || 0);
+        if (worked < 0) worked = 0;
+        return worked;
+      }
+
+      // Превью
+      function calcPreview() {
+        const start = document.getElementById('fStart').value;
+        const lunch = document.getElementById('fLunch').value;
+        const end = document.getElementById('fEnd').value;
+        if (!start || !end) {
+          document.getElementById('preview').style.display = 'none';
+          return;
+        }
+        const data = load();
+        const worked = calc(start, lunch, end);
+        const money = minToMoney(worked, data.rate);
+        document.getElementById('preview').style.display = 'flex';
+        document.getElementById('pvTime').textContent = minToTime(worked);
+        document.getElementById('pvMoney').textContent = fmtMoney(money);
+      }
+
+      // Добавить запись
+      function addEntry() {
+        const date = document.getElementById('fDate').value;
+        const start = document.getElementById('fStart').value;
+        const lunch = document.getElementById('fLunch').value;
+        const end = document.getElementById('fEnd').value;
+        if (!start || !end) {
+          alert('Укажи начало и конец работы');
+          return;
+        }
+        const data = load();
+        const worked = calc(start, lunch, end);
+        const money = minToMoney(worked, data.rate);
+        data.entries.unshift({
+          id: Date.now(),
+          date: date || new Date().toISOString().split('T')[0],
+          start, lunch, end,
+          worked, money
+        });
+        save(data);
+        render();
+        // Сброс формы
+        document.getElementById('fDate').value = '';
+        document.getElementById('fStart').value = '09:00';
+        document.getElementById('fLunch').value = '40';
+        document.getElementById('fEnd').value = '18:00';
+        calcPreview();
+      }
+
+      // Удалить запись
+      function deleteEntry(id) {
+        const data = load();
+        data.entries = data.entries.filter(e => e.id !== id);
+        save(data);
+        render();
+      }
+
+      // Сохранить ставку
+      function saveRate() {
+        const data = load();
+        data.rate = parseInt(document.getElementById('rate').value) || 0;
+        save(data);
+        render();
+        calcPreview();
+      }
+
+      // Очистить всё
+      function clearAll() {
+        if (!confirm('Удалить все записи?')) return;
+        const data = load();
+        data.entries = [];
+        save(data);
+        render();
+      }
+
+      // Отрисовка
+      function render() {
+        const data = load();
+        document.getElementById('rate').value = data.rate;
+
+        // История
+        const histDiv = document.getElementById('history');
+        if (data.entries.length === 0) {
+          histDiv.innerHTML = '<div class="empty">Пока нет записей. Заполни форму выше и нажми «Добавить в историю».</div>';
+        } else {
+          histDiv.innerHTML = data.entries.map(e => `
+            <div class="h-card">
+              <div class="h-left">
+                <div class="h-date">${fmtDate(e.date)}</div>
+                <div class="h-time">${e.start} — ${e.end} · обед ${e.lunch || 0} мин</div>
+              </div>
+              <div style="display:flex; align-items:center;">
+                <div class="h-right">
+                  <div class="h-hours">${minToTime(e.worked)}</div>
+                  <div class="h-money">${fmtMoney(e.money)}</div>
+                </div>
+                <button class="h-delete" onclick="deleteEntry(${e.id})">✕</button>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // Итоги
+        const totalMin = data.entries.reduce((s, e) => s + e.worked, 0);
+        const totalMoney = data.entries.reduce((s, e) => s + e.money, 0);
+        document.getElementById('totalHours').textContent = minToTime(totalMin);
+        document.getElementById('totalMoney').textContent = fmtMoney(totalMoney);
+      }
+
+      // Старт
+      document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+      render();
+      calcPreview();
+    </script>
+  </body>
+</html>
