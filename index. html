@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Учёт работы — часы и деньги</title>
+    <style>
+      :root {
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --bg: #f1f5f9;
+        --surface: #ffffff;
+        --text: #1e293b;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --danger: #ef4444;
+        --success: #10b981;
+        --warning: #f59e0b;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 12px;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      .container { max-width: 100%; }
+
+      header {
+        text-align: center;
+        margin-bottom: 16px;
+      }
+      h1 { font-size: 20px; margin: 0 0 4px; }
+      .subtitle { color: var(--muted); font-size: 13px; margin: 0; }
+
+      /* Сводка сверху */
+      .summary {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .summary-card {
+        flex: 1;
+        background: var(--surface);
+        border-radius: 12px;
+        padding: 14px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+      .summary-card .label {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+      .summary-card .value {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .summary-card.hours .value { color: var(--primary); }
+      .summary-card.money .value { color: var(--success); }
+
+      /* Кнопки */
+      .controls {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      button {
+        padding: 14px 16px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      button:active { opacity: 0.7; }
+      .btn-add { background: var(--primary); color: #fff; flex: 1; }
+      .btn-save { background: var(--success); color: #fff; flex: 1; }
+      .btn-clear { background: #fff; color: var(--muted); border: 1px solid var(--border); }
+      .btn-delete {
+        background: var(--danger);
+        color: #fff;
+        padding: 10px 14px;
+        font-size: 14px;
+        border-radius: 8px;
+      }
+
+      /* Ставка */
+      .rate-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        background: var(--surface);
+        padding: 12px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+      .rate-row label { font-size: 14px; font-weight: 600; white-space: nowrap; }
+      .rate-row input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 16px;
+      }
+
+      /* Таблица текущей недели */
+      .week-section {
+        background: var(--surface);
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+      .week-title {
+        background: var(--primary);
+        color: #fff;
+        padding: 12px 16px;
+        font-weight: 600;
+        font-size: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .week-title .week-total { font-size: 14px; opacity: 0.9; }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        background: #f8fafc;
+        text-align: left;
+        padding: 10px;
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border);
+      }
+      td {
+        padding: 10px;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+      }
+      tr:last-child td { border-bottom: none; }
+
+      input, select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+      input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+      }
+
+      .cell-total { font-weight: 700; color: var(--primary); }
+      .cell-money { font-weight: 700; color: var(--success); }
+
+      /* История */
+      .history-section { margin-top: 20px; }
+      .history-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--text);
+      }
+      .history-card {
+        background: var(--surface);
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+      .history-card-header {
+        padding: 12px 16px;
+        background: #f8fafc;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        font-size: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .history-card-body { padding: 12px 16px; }
+      .history-card-body table { font-size: 13px; }
+      .history-card-body th { font-size: 11px; }
+      .history-card-body td { padding: 8px; font-size: 13px; }
+      .history-delete {
+        background: transparent;
+        color: var(--danger);
+        border: 1px solid var(--danger);
+        padding: 6px 10px;
+        font-size: 12px;
+        border-radius: 6px;
+      }
+      .empty-history {
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+        padding: 20px;
+      }
+
+      /* Адаптация под узкие экраны */
+      @media (max-width: 480px) {
+        .week-table thead { display: none; }
+        .week-table tr {
+          display: block;
+          margin-bottom: 10px;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 8px;
+        }
+        .week-table td {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border: none;
+          padding: 6px 4px;
+        }
+        .week-table td:before {
+          content: attr(data-label);
+          font-size: 12px;
+          color: var(--muted);
+          font-weight: 500;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Учёт работы</h1>
+        <p class="subtitle">Часы, деньги, история — всё считает сам</p>
+      </header>
+
+      <!-- Сводка за всё время -->
+      <div class="summary">
+        <div class="summary-card hours">
+          <div class="label">Всего часов</div>
+          <div class="value" id="totalHours">0 ч 00 мин</div>
+        </div>
+        <div class="summary-card money">
+          <div class="label">Всего заработано</div>
+          <div class="value" id="totalMoney">0 ₽</div>
+        </div>
+      </div>
+
+      <!-- Ставка -->
+      <div class="rate-row">
+        <label>Ставка ₽/час:</label>
+        <input type="number" id="rateInput" value="300" min="0" oninput="onRateChange()" />
+      </div>
+
+      <!-- Кнопки -->
+      <div class="controls">
+        <button class="btn-add" onclick="addRow()">+ Добавить день</button>
+        <button class="btn-save" onclick="saveWeek()">💾 Сохранить неделю</button>
+        <button class="btn-clear" onclick="clearCurrent()">Очистить</button>
+      </div>
+
+      <!-- Текущая неделя -->
+      <div class="week-section">
+        <div class="week-title">
+          <span>Текущая неделя</span>
+          <span class="week-total" id="weekTotal">0 ч 00 мин — 0 ₽</span>
+        </div>
+        <table class="week-table" id="workTable">
+          <thead>
+            <tr>
+              <th>День</th>
+              <th>Дата</th>
+              <th>Начало</th>
+              <th>Обед</th>
+              <th>Конец</th>
+              <th>Часы</th>
+              <th>₽</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- История -->
+      <div class="history-section">
+        <div class="history-title">История</div>
+        <div id="historyContainer"></div>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEY = 'work_tracker_v2';
+
+      // --- Утилиты ---
+      function timeToMin(t) {
+        if (!t) return 0;
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + m;
+      }
+      function minToTime(min) {
+        if (min < 0) min = 0;
+        const h = Math.floor(min / 60);
+        const m = min % 60;
+        return `${h} ч ${String(m).padStart(2,'0')} мин`;
+      }
+      function minToMoney(min, rate) {
+        return Math.round((min / 60) * rate);
+      }
+      function formatMoney(val) {
+        return val.toLocaleString('ru-RU') + ' ₽';
+      }
+      function getWeekLabel() {
+        const now = new Date();
+        const monday = new Date(now);
+        const day = now.getDay() || 7;
+        monday.setDate(now.getDate() - day + 1);
+        return monday.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) +
+               ' — ' +
+               new Date(monday.getTime() + 4*86400000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+      }
+
+      // --- Состояние ---
+      let state = {
+        rate: 300,
+        current: [],
+        history: []
+      };
+
+      function loadState() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          state = JSON.parse(saved);
+        }
+        document.getElementById('rateInput').value = state.rate;
+        renderCurrent();
+        renderHistory();
+        renderSummary();
+      }
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      // --- Текущая неделя ---
+      function createRowHtml(data) {
+        data = data || {};
+        return `
+          <tr>
+            <td data-label="День"><input type="text" placeholder="Пн" value="${data.day||''}" oninput="onCellInput(this)" /></td>
+            <td data-label="Дата"><input type="date" value="${data.date||''}" oninput="onCellInput(this)" /></td>
+            <td data-label="Начало"><input type="time" value="${data.start||''}" oninput="onCellInput(this)" /></td>
+            <td data-label="Обед"><input type="number" placeholder="40" min="0" max="180" value="${data.lunch||''}" oninput="onCellInput(this)" /></td>
+            <td data-label="Конец"><input type="time" value="${data.end||''}" oninput="onCellInput(this)" /></td>
+            <td data-label="Часы" class="cell-total">${data.workedText||'—'}</td>
+            <td data-label="₽" class="cell-money">${data.moneyText||'—'}</td>
+            <td><button class="btn-delete" onclick="deleteRow(this)">✕</button></td>
+          </tr>`;
+      }
+
+      function addRow() {
+        const tbody = document.getElementById('tbody');
+        tbody.insertAdjacentHTML('beforeend', createRowHtml());
+        collectAndRender();
+      }
+
+      function deleteRow(btn) {
+        btn.closest('tr').remove();
+        collectAndRender();
+      }
+
+      function onCellInput() {
+        collectAndRender();
+      }
+
+      function onRateChange() {
+        state.rate = parseInt(document.getElementById('rateInput').value) || 0;
+        collectAndRender();
+      }
+
+      function collectAndRender() {
+        const rows = document.querySelectorAll('#tbody tr');
+        state.current = [];
+        rows.forEach(row => {
+          const inputs = row.querySelectorAll('input');
+          const day = inputs[0].value;
+          const date = inputs[1].value;
+          const start = inputs[2].value;
+          const lunch = parseInt(inputs[3].value) || 0;
+          const end = inputs[4].value;
+          let workedMin = 0;
+          let workedText = '—';
+          let moneyText = '—';
+          if (start && end) {
+            workedMin = timeToMin(end) - timeToMin(start) - lunch;
+            if (workedMin < 0) workedMin = 0;
+            workedText = minToTime(workedMin);
+            moneyText = formatMoney(minToMoney(workedMin, state.rate));
+          }
+          row.querySelector('.cell-total').textContent = workedText;
+          row.querySelector('.cell-money').textContent = moneyText;
+          state.current.push({ day, date, start, lunch, end, workedMin, workedText, moneyText });
+        });
+        renderWeekTotal();
+        renderSummary();
+        saveState();
+      }
+
+      function renderCurrent() {
+        const tbody = document.getElementById('tbody');
+        tbody.innerHTML = '';
+        if (state.current.length === 0) {
+          tbody.innerHTML = createRowHtml();
+        } else {
+          state.current.forEach(r => {
+            tbody.insertAdjacentHTML('beforeend', createRowHtml(r));
+          });
+        }
+        renderWeekTotal();
+      }
+
+      function renderWeekTotal() {
+        const totalMin = state.current.reduce((s, r) => s + (r.workedMin || 0), 0);
+        const totalMoney = state.current.reduce((s, r) => s + minToMoney(r.workedMin || 0, state.rate), 0);
+        document.getElementById('weekTotal').textContent =
+          minToTime(totalMin) + ' — ' + formatMoney(totalMoney);
+      }
+
+      function renderSummary() {
+        let allMin = state.current.reduce((s, r) => s + (r.workedMin || 0), 0);
+        let allMoney = state.current.reduce((s, r) => s + minToMoney(r.workedMin || 0, state.rate), 0);
+        state.history.forEach(w => {
+          allMin += w.totalMin || 0;
+          allMoney += w.totalMoney || 0;
+        });
+        document.getElementById('totalHours').textContent = minToTime(allMin);
+        document.getElementById('totalMoney').textContent = formatMoney(allMoney);
+      }
+
+      // --- Сохранение недели в историю ---
+      function saveWeek() {
+        if (state.current.length === 0 || state.current.every(r => !r.start && !r.end)) {
+          alert('Сначала добавь хотя бы один рабочий день!');
+          return;
+        }
+        const totalMin = state.current.reduce((s, r) => s + (r.workedMin || 0), 0);
+        const totalMoney = state.current.reduce((s, r) => s + minToMoney(r.workedMin || 0, state.rate), 0);
+        const week = {
+          id: Date.now(),
+          label: getWeekLabel(),
+          rows: state.current.map(r => ({...r})),
+          totalMin: totalMin,
+          totalMoney: totalMoney,
+          rate: state.rate
+        };
+        state.history.unshift(week);
+        state.current = [];
+        saveState();
+        renderCurrent();
+        renderHistory();
+        renderSummary();
+      }
+
+      // --- История ---
+      function renderHistory() {
+        const container = document.getElementById('historyContainer');
+        if (state.history.length === 0) {
+          container.innerHTML = '<div class="empty-history">Нет сохранённых недель. Заполни дни и нажми «Сохранить неделю».</div>';
+          return;
+        }
+        container.innerHTML = '';
+        state.history.forEach(w => {
+          let rowsHtml = '';
+          w.rows.forEach(r => {
+            rowsHtml += `
+              <tr>
+                <td>${r.day||'—'}</td>
+                <td>${r.date||'—'}</td>
+                <td>${r.start||'—'} – ${r.end||'—'}</td>
+                <td>${r.lunch||0} мин</td>
+                <td>${r.workedText||'—'}</td>
+                <td>${r.moneyText||'—'}</td>
+              </tr>`;
+          });
+          const card = document.createElement('div');
+          card.className = 'history-card';
+          card.innerHTML = `
+            <div class="history-card-header">
+              <span>${w.label} — ${minToTime(w.totalMin)} — ${formatMoney(w.totalMoney)}</span>
+              <button class="history-delete" onclick="deleteWeek(${w.id})">Удалить</button>
+            </div>
+            <div class="history-card-body">
+              <table>
+                <thead>
+                  <tr><th>День</th><th>Дата</th><th>Время</th><th>Обед</th><th>Часы</th><th>₽</th></tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+              </table>
+            </div>`;
+          container.appendChild(card);
+        });
+      }
+
+      function deleteWeek(id) {
+        if (!confirm('Удалить эту неделю из истории?')) return;
+        state.history = state.history.filter(w => w.id !== id);
+        saveState();
+        renderHistory();
+        renderSummary();
+      }
+
+      function clearCurrent() {
+        if (!confirm('Очистить текущую неделю?')) return;
+        state.current = [];
+        saveState();
+        renderCurrent();
+        renderSummary();
+      }
+
+      // --- Старт ---
+      loadState();
+    </script>
+  </body>
+</html>
