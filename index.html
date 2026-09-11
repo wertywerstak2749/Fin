@@ -3,72 +3,294 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>График работы</title>
+    <title>Учёт рабочего времени</title>
     <style>
+      :root {
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --text: #1e293b;
+        --border: #e2e8f0;
+        --success: #10b981;
+        --danger: #ef4444;
+      }
+
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
         padding: 16px;
-        background-color: #f5f5f5;
-        color: #333;
       }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
       h1 {
-        font-size: 20px;
-        margin-bottom: 12px;
+        font-size: 22px;
+        margin: 0 0 8px 0;
       }
+
+      p.subtitle {
+        color: #64748b;
+        font-size: 14px;
+      }
+
       table {
         width: 100%;
         border-collapse: collapse;
-        background: #fff;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        background: var(--surface);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
       }
-      th, td {
-        border: 1px solid #ccc;
-        padding: 14px; /* большие ячейки для удобного ввода на телефоне */
-        text-align: left;
-      }
+
       th {
-        background-color: #007bff;
-        color: #fff;
-        font-weight: 600;
+        background-color: var(--primary);
+        color: white;
+        text-align: left;
+        padding: 16px;
+        font-weight: 500;
+        font-size: 14px;
+        text-transform: uppercase;
       }
-      input {
+
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 16px;
+      }
+
+      td:last-child {
+        border-bottom: none;
+      }
+
+      input, select {
         width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
         font-size: 15px;
+        box-sizing: border-box;
       }
-      .total-cell {
+
+      input:focus, select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-add {
+        background-color: var(--primary);
+        color: white;
+      }
+
+      .btn-add:hover {
+        background-color: var(--primary-hover);
+      }
+
+      .btn-delete {
+        background-color: var(--danger);
+        color: white;
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+
+      .btn-delete:hover {
+        background-color: #dc2626;
+      }
+
+      .total-row {
+        background-color: #f1f5f9;
         font-weight: bold;
-        text-align: right;
+        color: var(--primary);
       }
     </style>
   </head>
   <body>
-    <h1>График работы (офлайн, удобно на iPhone)</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>День недели</th>
-          <th>Дата</th>
-          <th>Начало работы</th>
-          <th>Обед (мин)</th>
-          <th>Конец работы</th>
-          <th>Отработано (ч:мин)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><input type="text" placeholder="Пн/Вт/Ср..." /></td>
-          <td><input type="date" /></td>
-          <td><input type="time" placeholder="09:00" /></td>
-          <td><input type="number" placeholder="40" min="0" max="120" /></td>
-          <td><input type="time" placeholder="18:10" /></td>
-          <td class="total-cell"><input type="text" readonly placeholder="авторасчёт" /></td>
-        </tr>
-        <!-- Можно добавить ещё строк, скопировав <tr>...</tr> -->
-      </tbody>
-    </table>
+    <div class="container">
+      <header>
+        <h1>Учёт рабочего времени</h1>
+        <p class="subtitle">Данные сохраняются автоматически в браузере</p>
+      </header>
+
+      <div class="controls">
+        <button class="btn-add" onclick="addRow()">+ Добавить строку</button>
+        <button onclick="clearAll()" style="background:#fff; color:#64748b; border:1px solid var(--border)">Очистить всё</button>
+      </div>
+
+      <table id="workTable">
+        <thead>
+          <tr>
+            <th style="width: 12%;">День недели</th>
+            <th style="width: 10%;">Дата</th>
+            <th style="width: 12%;">Начало</th>
+            <th style="width: 10%;">Обед (мин)</th>
+            <th style="width: 12%;">Конец</th>
+            <th style="width: 18%;">Отработано</th>
+            <th style="width: 6%;">Действие</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <!-- Строки будут добавляться через JS -->
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="5" style="text-align: right;">Итого за неделю:</td>
+            <td id="weeklyTotal"><input type="text" readonly style="border:none; background:transparent; font-weight:bold;" /></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <script>
+      const STORAGE_KEY = 'work_tracker_rows';
+
+      function timeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+      }
+
+      function minutesToTimeString(totalMinutes) {
+        if (totalMinutes < 0) return '0 ч 0 мин';
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
+        return `${h} ч ${String(m).padStart(2, '0')} мин`;
+      }
+
+      function createRowHtml(rowData = null) {
+        return `
+          <tr>
+            <td><input type="text" placeholder="Пн/Вт/Ср..." value="${rowData?.day || ''}" oninput="onInput(this)" /></td>
+            <td><input type="date" value="${rowData?.date || ''}" oninput="onInput(this)" /></td>
+            <td><input type="time" placeholder="09:00" value="${rowData?.start || ''}" oninput="onInput(this)" /></td>
+            <td><input type="number" placeholder="40" min="0" max="120" value="${rowData?.lunch || ''}" oninput="onInput(this)" /></td>
+            <td><input type="time" placeholder="18:10" value="${rowData?.end || ''}" oninput="onInput(this)" /></td>
+            <td class="total-cell"><input type="text" readonly placeholder="— ч — мин" value="${rowData?.worked || ''}" /></td>
+            <td>
+              <button class="btn-delete" onclick="deleteRow(this)">✕</button>
+            </td>
+          </tr>`;
+      }
+
+      function onInput(input) {
+        calculateRow(input.closest('tr'));
+        saveRows();
+      }
+
+      function calculateRow(row) {
+        const startInput = row.querySelector('input[type="time"]:nth-of-type(1)');
+        const endInput = row.querySelector('input[type="time"]:nth-of-type(2)');
+        const lunchInput = row.querySelector('input[type="number"]');
+        const totalInput = row.querySelector('.total-cell input');
+
+        const start = timeToMinutes(startInput.value);
+        const end = timeToMinutes(endInput.value);
+        const lunch = parseInt(lunchInput.value) || 0;
+
+        if (!startInput.value || !endInput.value) {
+          totalInput.value = '';
+          updateWeeklyTotal();
+          return;
+        }
+
+        let workedMinutes = end - start - lunch;
+        if (workedMinutes < 0) workedMinutes = 0;
+
+        totalInput.value = minutesToTimeString(workedMinutes);
+        updateWeeklyTotal();
+      }
+
+      function updateWeeklyTotal() {
+        const totals = document.querySelectorAll('.total-cell input');
+        let totalMinutes = 0;
+
+        totals.forEach(input => {
+          const val = input.value;
+          if (!val) return;
+          const parts = val.match(/(\d+) ч (\d+) мин/);
+          if (parts) {
+            totalMinutes += parseInt(parts[1]) * 60 + parseInt(parts[2]);
+          }
+        });
+
+        document.getElementById('weeklyTotal').querySelector('input').value = minutesToTimeString(totalMinutes);
+      }
+
+      function addRow() {
+        const tbody = document.getElementById('tbody');
+        tbody.insertAdjacentHTML('beforeend', createRowHtml());
+        saveRows();
+      }
+
+      function deleteRow(button) {
+        button.closest('tr').remove();
+        saveRows();
+        updateWeeklyTotal();
+      }
+
+      function saveRows() {
+        const rows = Array.from(document.querySelectorAll('#tbody tr')).map(row => ({
+          day: row.querySelector('input:nth-of-type(1)').value,
+          date: row.querySelector('input[type="date"]').value,
+          start: row.querySelector('input[type="time"]:nth-of-type(1)').value,
+          lunch: row.querySelector('input[type="number"]').value,
+          end: row.querySelector('input[type="time"]:nth-of-type(2)').value,
+          worked: row.querySelector('.total-cell input').value
+        }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+      }
+
+      function loadRows() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const tbody = document.getElementById('tbody');
+        if (saved) {
+          const rows = JSON.parse(saved);
+          rows.forEach(row => {
+            tbody.insertAdjacentHTML('beforeend', createRowHtml(row));
+          });
+        } else {
+          // Если нет сохранённых данных — создаём одну пустую строку
+          tbody.innerHTML = createRowHtml();
+        }
+        updateWeeklyTotal();
+      }
+
+      function clearAll() {
+        if(confirm('Вы уверены, что хотите удалить все данные?')) {
+          document.getElementById('tbody').innerHTML = '';
+          addRow();
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+
+      // При загрузке страницы восстанавливаем данные
+      loadRows();
+    </script>
   </body>
 </html>
-
