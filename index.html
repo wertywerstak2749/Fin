@@ -1,673 +1,322 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Мой дашборд</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎈</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --ink: #2d2a3f;
-    --c-pink: #ff6b9d;
-    --c-yellow: #ffd93d;
-    --c-teal: #4ecdc4;
-    --c-orange: #ff9f43;
-    --c-purple: #a29bfe;
-    --c-green: #6bcb77;
-    --c-blue: #74b9ff;
-    --c-red: #ff6b6b;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: "Nunito", "Segoe UI", system-ui, sans-serif;
-    color: var(--ink);
-    background: linear-gradient(130deg, #ffd93d 0%, #ff9f43 25%, #ff6b9d 55%, #a29bfe 80%, #4ecdc4 100%);
-    background-attachment: fixed;
-    min-height: 100vh;
-    padding: 34px 16px 70px;
-    overflow-x: hidden;
-  }
-  .bg-emoji {
-    position: fixed; z-index: 0; opacity: .35; font-size: 40px;
-    pointer-events: none; animation: floaty 9s ease-in-out infinite;
-  }
-  .bg-emoji:nth-child(1) { top: 10%; left: 4%; animation-delay: 0s; }
-  .bg-emoji:nth-child(2) { top: 60%; left: 8%; animation-delay: 1.4s; }
-  .bg-emoji:nth-child(3) { top: 18%; right: 6%; animation-delay: .7s; }
-  .bg-emoji:nth-child(4) { bottom: 12%; right: 9%; animation-delay: 2.1s; }
-  .bg-emoji:nth-child(5) { top: 45%; left: 50%; animation-delay: 1s; }
-  @keyframes floaty {
-    0%, 100% { transform: translateY(0) rotate(-6deg); }
-    50% { transform: translateY(-22px) rotate(6deg); }
-  }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Учёт работы</title>
+    <style>
+      :root {
+        --primary: #6366f1;
+        --bg: #f3f4f6;
+        --surface: #ffffff;
+        --text: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --danger: #ef4444;
+        --success: #10b981;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 12px;
+        -webkit-text-size-adjust: 100%;
+      }
 
-  .container { max-width: 1080px; margin: 0 auto; position: relative; z-index: 1; }
+      h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
+      .subtitle { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 16px; }
 
-  .card {
-    background: #fff;
-    border: 4px solid var(--ink);
-    border-radius: 26px;
-    box-shadow: 9px 9px 0 var(--ink);
-    padding: 22px;
-    margin-bottom: 24px;
-  }
-  .card.sh-pink { box-shadow: 9px 9px 0 var(--c-pink); }
-  .card.sh-yellow { box-shadow: 9px 9px 0 var(--c-yellow); }
-  .card.sh-teal { box-shadow: 9px 9px 0 var(--c-teal); }
-  .card.sh-orange { box-shadow: 9px 9px 0 var(--c-orange); }
-  .card.sh-purple { box-shadow: 9px 9px 0 var(--c-purple); }
-  .card.sh-green { box-shadow: 9px 9px 0 var(--c-green); }
-  .card.sh-blue { box-shadow: 9px 9px 0 var(--c-blue); }
-  .card.sh-red { box-shadow: 9px 9px 0 var(--c-red); }
+      /* Сводка */
+      .summary { display: flex; gap: 10px; margin-bottom: 16px; }
+      .summary-card {
+        flex: 1; background: var(--surface); border-radius: 12px;
+        padding: 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      }
+      .summary-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+      .summary-card .value { font-size: 18px; font-weight: 700; }
+      .summary-card.hours .value { color: var(--primary); }
+      .summary-card.money .value { color: var(--success); }
 
-  .hero {
-    text-align: center;
-    background: repeating-linear-gradient(-45deg, #fff, #fff 14px, #fff8e6 14px, #fff8e6 28px);
-  }
-  .hero .greet { font: 800 20px "Baloo 2", "Nunito", sans-serif; }
-  .hero .clock {
-    font: 800 clamp(48px, 9vw, 84px) "Baloo 2", "Nunito", sans-serif;
-    line-height: 1.05; letter-spacing: 1px;
-    color: var(--ink);
-    text-shadow: 4px 4px 0 var(--c-yellow);
-  }
-  .hero .date { font: 700 17px "Nunito", sans-serif; color: #6b6880; margin-top: 4px; text-transform: capitalize; }
+      /* Форма ввода */
+      .form-card {
+        background: var(--surface); border-radius: 14px; padding: 16px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 16px;
+      }
+      .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
+      .form-field { flex: 1; }
+      .form-field label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; font-weight: 500; }
+      input {
+        width: 100%; padding: 14px; border: 1px solid var(--border);
+        border-radius: 10px; font-size: 16px; box-sizing: border-box;
+      }
+      input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
 
-  .w-head {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-  }
-  .w-head .chip {
-    width: 44px; height: 44px; border-radius: 14px;
-    border: 3px solid var(--ink); display: grid; place-items: center;
-    font-size: 22px; flex-shrink: 0;
-  }
-  .w-head h2 { font: 800 18px "Baloo 2", "Nunito", sans-serif; letter-spacing: .4px; }
+      /* Кнопки */
+      .btn {
+        padding: 16px; border: none; border-radius: 12px;
+        font-weight: 600; font-size: 16px; cursor: pointer; width: 100%;
+        transition: opacity 0.2s;
+      }
+      .btn:active { opacity: 0.7; }
+      .btn-primary { background: var(--primary); color: #fff; }
+      .btn-clear { background: #fff; color: var(--muted); border: 1px solid var(--border); margin-top: 8px; }
 
-  .search-row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .search-row input[type="text"] {
-    flex: 1; min-width: 200px; padding: 13px 16px;
-    border: 3px solid var(--ink); border-radius: 16px;
-    font: 700 15px "Nunito", sans-serif; outline: none; background: #fffdf5;
-  }
-  .search-row input[type="text"]:focus { background: #fff; box-shadow: 4px 4px 0 var(--c-yellow); }
-  select {
-    padding: 13px 12px; border: 3px solid var(--ink); border-radius: 16px;
-    font: 800 14px "Nunito", sans-serif; background: var(--c-teal); color: var(--ink);
-    cursor: pointer; outline: none;
-  }
-  .btn {
-    padding: 12px 20px; border: 3px solid var(--ink); border-radius: 16px;
-    font: 800 14px "Nunito", sans-serif; color: var(--ink);
-    background: var(--c-yellow); cursor: pointer;
-    box-shadow: 4px 4px 0 var(--ink);
-    transition: transform .12s, box-shadow .12s;
-  }
-  .btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
-  .btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
-  .btn.pink { background: var(--c-pink); }
-  .btn.teal { background: var(--c-teal); }
-  .btn.purple { background: var(--c-purple); }
-  .btn.green { background: var(--c-green); }
-  .btn.orange { background: var(--c-orange); }
-  .btn.blue { background: var(--c-blue); }
-  .btn.mini { padding: 7px 12px; font-size: 13px; border-width: 2.5px; box-shadow: 3px 3px 0 var(--ink); }
+      /* Превью расчёта */
+      .preview {
+        background: #f0f0ff; border-radius: 10px; padding: 12px 14px;
+        margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+      }
+      .preview .pv-time { font-weight: 700; color: var(--primary); font-size: 16px; }
+      .preview .pv-money { font-weight: 700; color: var(--success); font-size: 16px; }
+      .preview .pv-label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
 
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  .grid > .card { margin-bottom: 0; }
-  .span2 { grid-column: span 2; }
+      /* История */
+      .history-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+      .history-list { display: flex; flex-direction: column; gap: 8px; }
+      .h-card {
+        background: var(--surface); border-radius: 12px; padding: 14px 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      .h-card .h-left .h-date { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+      .h-card .h-left .h-time { font-size: 13px; color: var(--muted); }
+      .h-card .h-right { text-align: right; }
+      .h-card .h-right .h-hours { font-weight: 700; color: var(--primary); font-size: 15px; }
+      .h-card .h-right .h-money { font-weight: 700; color: var(--success); font-size: 15px; }
+      .h-delete {
+        background: transparent; border: 1px solid var(--border);
+        color: var(--danger); padding: 6px 12px; border-radius: 8px;
+        font-size: 13px; margin-left: 10px; cursor: pointer;
+      }
+      .empty { text-align: center; color: var(--muted); padding: 24px; font-size: 14px; }
 
-  .links-grid { display: flex; flex-wrap: wrap; gap: 14px; }
-  .link-tile {
-    position: relative; width: 108px; padding: 16px 8px 12px;
-    border: 3px solid var(--ink); border-radius: 18px;
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-    cursor: pointer; transition: transform .18s;
-    text-decoration: none; color: var(--ink);
-  }
-  .link-tile:hover { transform: rotate(-3deg) scale(1.07); }
-  .link-tile .e { font-size: 32px; }
-  .link-tile .n { font: 800 13px "Nunito", sans-serif; text-align: center; word-break: break-word; }
-  .link-tile .x {
-    position: absolute; top: -10px; right: -10px;
-    width: 26px; height: 26px; border-radius: 9px;
-    border: 3px solid var(--ink); background: var(--c-red); color: #fff;
-    font: 800 12px "Nunito", sans-serif; cursor: pointer;
-    display: none; place-items: center;
-  }
-  .link-tile:hover .x { display: grid; }
-  .link-form { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; padding-top: 16px; border-top: 3px dashed #d9d5ea; }
-  .link-form input {
-    padding: 10px 12px; border: 3px solid var(--ink); border-radius: 13px;
-    font: 700 14px "Nunito", sans-serif; outline: none; background: #fffdf5;
-  }
-  .link-form input:focus { background: #fff; }
-  .link-form input[type="text"]:first-child { width: 64px; text-align: center; }
-  .link-form input.name { width: 150px; }
-  .link-form input.url { flex: 1; min-width: 170px; }
+      /* Ставка */
+      .rate-card {
+        background: var(--surface); border-radius: 12px; padding: 14px;
+        margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        display: flex; align-items: center; gap: 10px;
+      }
+      .rate-card label { font-size: 15px; font-weight: 600; white-space: nowrap; }
+      .rate-card input { flex: 1; }
 
-  .events-grid { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 4px; }
-  .event {
-    position: relative;
-    border: 3px solid var(--ink); border-radius: 18px;
-    padding: 14px 20px; min-width: 130px; text-align: center;
-    display: flex; flex-direction: column; gap: 2px;
-  }
-  .event .days { font: 800 34px "Baloo 2", "Nunito", sans-serif; line-height: 1; }
-  .event .lbl { font: 800 12.5px "Nunito", sans-serif; opacity: .65; }
-  .event .nm { font: 800 14px "Nunito", sans-serif; margin-top: 4px; }
-  .event .x {
-    position: absolute; top: -11px; right: -11px;
-    width: 26px; height: 26px; border-radius: 9px;
-    border: 3px solid var(--ink); background: var(--c-red); color: #fff;
-    font: 800 12px "Nunito", sans-serif; cursor: pointer;
-    display: none; place-items: center;
-  }
-  .event:hover .x { display: grid; }
-  .event-form { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; padding-top: 16px; border-top: 3px dashed #d9d5ea; }
-  .event-form input {
-    padding: 10px 12px; border: 3px solid var(--ink); border-radius: 13px;
-    font: 700 14px "Nunito", sans-serif; outline: none; background: #fffdf5;
-  }
-  .event-form input[type="text"] { flex: 1; min-width: 160px; }
+      @media (max-width: 400px) {
+        .form-row { flex-direction: column; gap: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Учёт работы</h1>
+    <p class="subtitle">Добавляй день — часы и деньги считаются сами</p>
 
-  .note-area {
-    width: 100%; min-height: 190px; resize: vertical;
-    padding: 14px; border: 3px solid var(--ink); border-radius: 16px;
-    background: repeating-linear-gradient(0deg, #fffdf0, #fffdf0 28px, #ffe9a8 28px, #ffe9a8 29px);
-    font: 700 15px/29px "Nunito", sans-serif; color: var(--ink); outline: none;
-  }
-  .note-area:focus { box-shadow: 4px 4px 0 var(--c-yellow); }
-  .note-status { font: 800 12.5px "Nunito", sans-serif; color: #7a7794; margin-top: 10px; height: 16px; }
-
-  .glasses { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
-  .glass {
-    width: 46px; height: 56px; border: 3px solid var(--ink); border-radius: 12px;
-    background: #f2f1f8; font-size: 22px; cursor: pointer;
-    display: grid; place-items: center;
-    transition: transform .15s, background .2s;
-    filter: grayscale(1); opacity: .45;
-  }
-  .glass:hover { transform: translateY(-4px) scale(1.06); }
-  .glass.full {
-    background: linear-gradient(180deg, #74b9ff, #4ecdc4);
-    filter: none; opacity: 1;
-    animation: pop .3s cubic-bezier(.2,.7,.3,1.5);
-  }
-  @keyframes pop { 0% { transform: scale(.6); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
-  .water-count { font: 800 17px "Baloo 2", "Nunito", sans-serif; }
-  .water-count b { font-size: 26px; color: #0a8f9e; }
-
-  .payday-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
-  .big-days {
-    flex: 1; min-width: 130px; text-align: center;
-    border: 3px solid var(--ink); border-radius: 18px; padding: 14px;
-    background: repeating-linear-gradient(-45deg, #eafff8, #eafff8 12px, #fff 12px, #fff 24px);
-  }
-  .big-days .n { font: 800 42px "Baloo 2", "Nunito", sans-serif; line-height: 1; }
-  .big-days .l { font: 800 13px "Nunito", sans-serif; opacity: .65; margin-top: 4px; }
-  .payday-set { display: flex; align-items: center; gap: 8px; font: 800 14px "Nunito", sans-serif; }
-
-  .timer-display {
-    position: relative; width: 190px; height: 190px; margin: 6px auto 14px;
-  }
-  .timer-display svg { transform: rotate(-90deg); }
-  .timer-display .t {
-    position: absolute; inset: 0; display: grid; place-items: center;
-    font: 800 40px "Baloo 2", "Nunito", sans-serif;
-  }
-  .timer-display.done { animation: blink .5s steps(2) infinite; }
-  @keyframes blink { 50% { opacity: .35; } }
-  .timer-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-  .timer-btns .btn { min-width: 70px; }
-
-  .advice-box {
-    display: flex; align-items: center; gap: 18px;
-    background: repeating-linear-gradient(-45deg, #fff3fa, #fff3fa 14px, #fff 14px, #fff 28px);
-    border: 3px dashed var(--ink); border-radius: 18px; padding: 18px 20px;
-  }
-  .advice-box .face { font-size: 42px; flex-shrink: 0; }
-  .advice-box .txt { font: 800 19px "Baloo 2", "Nunito", sans-serif; line-height: 1.4; }
-
-  .empty { font: 700 14px "Nunito", sans-serif; color: #8a87a3; opacity: .8; }
-
-  @media (max-width: 760px) {
-    .grid { grid-template-columns: 1fr; }
-    .span2 { grid-column: span 1; }
-    .bg-emoji { display: none; }
-  }
-</style>
-</head>
-<body>
-<div class="bg-emoji">🎈</div>
-<div class="bg-emoji">⭐</div>
-<div class="bg-emoji">🍭</div>
-<div class="bg-emoji">🌈</div>
-<div class="bg-emoji">🦄</div>
-
-<div class="container">
-  <div class="card hero sh-yellow">
-    <div class="greet" id="greet">Привет!</div>
-    <div class="clock" id="clock">00:00:00</div>
-    <div class="date" id="dateLine"></div>
-  </div>
-
-  <div class="card sh-pink">
-    <div class="search-row">
-      <input type="text" id="searchInput" placeholder="Что ищем? Введите и нажмите Enter" maxlength="200">
-      <select id="engine">
-        <option value="g">Google</option>
-        <option value="y">YouTube</option>
-        <option value="ya">Яндекс</option>
-      </select>
-      <button class="btn pink" id="searchBtn">Найти 🔍</button>
-    </div>
-  </div>
-
-  <div class="grid">
-    <div class="card span2 sh-teal">
-      <div class="w-head"><div class="chip" style="background:var(--c-teal)">⚡</div><h2>Быстрые закладки</h2></div>
-      <div class="links-grid" id="linksGrid"></div>
-      <div class="link-form">
-        <input type="text" id="linkEmoji" placeholder="😀" maxlength="2">
-        <input type="text" class="name" id="linkName" placeholder="Название" maxlength="30">
-        <input type="text" class="url" id="linkUrl" placeholder="Ссылка, например youtube.com" maxlength="200">
-        <button class="btn teal mini" id="addLinkBtn">+ Добавить</button>
+    <!-- Сводка -->
+    <div class="summary">
+      <div class="summary-card hours">
+        <div class="label">Всего часов</div>
+        <div class="value" id="totalHours">0 ч 00 мин</div>
+      </div>
+      <div class="summary-card money">
+        <div class="label">Всего заработано</div>
+        <div class="value" id="totalMoney">0 ₽</div>
       </div>
     </div>
 
-    <div class="card span2 sh-orange">
-      <div class="w-head"><div class="chip" style="background:var(--c-orange)">⏳</div><h2>Скоро случится</h2></div>
-      <div class="events-grid" id="eventsGrid"></div>
-      <div class="event-form">
-        <input type="text" id="eventName" placeholder="Событие, например: День рождения" maxlength="50">
-        <input type="date" id="eventDate">
-        <button class="btn orange mini" id="addEventBtn">+ Добавить</button>
-      </div>
+    <!-- Ставка -->
+    <div class="rate-card">
+      <label>Ставка ₽/час:</label>
+      <input type="number" id="rate" value="300" min="0" oninput="saveRate()" />
     </div>
 
-    <div class="card sh-yellow">
-      <div class="w-head"><div class="chip" style="background:var(--c-yellow)">📝</div><h2>Заметка</h2></div>
-      <textarea class="note-area" id="noteArea" placeholder="Пишите сюда что угодно — сохранится само..."></textarea>
-      <div class="note-status" id="noteStatus"></div>
+    <!-- Форма добавления -->
+    <div class="form-card">
+      <div class="form-row">
+        <div class="form-field">
+          <label>Дата</label>
+          <input type="date" id="fDate" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Начало</label>
+          <input type="time" id="fStart" value="09:00" oninput="calcPreview()" />
+        </div>
+        <div class="form-field">
+          <label>Обед (мин)</label>
+          <input type="number" id="fLunch" value="40" min="0" oninput="calcPreview()" />
+        </div>
+        <div class="form-field">
+          <label>Конец</label>
+          <input type="time" id="fEnd" value="18:00" oninput="calcPreview()" />
+        </div>
+      </div>
+
+      <div class="preview" id="preview" style="display:none;">
+        <div>
+          <div class="pv-label">Отработано</div>
+          <div class="pv-time" id="pvTime">—</div>
+        </div>
+        <div>
+          <div class="pv-label">Заработано</div>
+          <div class="pv-money" id="pvMoney">—</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="addEntry()">Добавить в историю</button>
+      <button class="btn btn-clear" onclick="clearAll()">Очистить всю историю</button>
     </div>
 
-    <div class="card sh-blue">
-      <div class="w-head"><div class="chip" style="background:var(--c-blue)">💧</div><h2>Вода сегодня</h2></div>
-      <div class="glasses" id="glasses"></div>
-      <div class="water-count">Выпито: <b id="waterCount">0</b> из 8 стаканов</div>
-    </div>
+    <!-- История -->
+    <div class="history-title">История</div>
+    <div class="history-list" id="history"></div>
 
-    <div class="card sh-green">
-      <div class="w-head"><div class="chip" style="background:var(--c-green)">💸</div><h2>До зарплаты</h2></div>
-      <div class="payday-row">
-        <div class="big-days"><div class="n" id="payDays">—</div><div class="l">дней до зарплаты</div></div>
-        <div class="big-days"><div class="n" id="monthDays">—</div><div class="l">дней до конца месяца</div></div>
-      </div>
-      <div class="payday-set">
-        <span>Число зарплаты:</span>
-        <select id="paydaySelect"></select>
-      </div>
-    </div>
+    <script>
+      const KEY = 'work_simple_v1';
 
-    <div class="card sh-purple">
-      <div class="w-head"><div class="chip" style="background:var(--c-purple)">🍵</div><h2>Таймер для чая</h2></div>
-      <div class="timer-display" id="timerDisplay">
-        <svg width="190" height="190" viewBox="0 0 190 190">
-          <circle cx="95" cy="95" r="82" fill="#f2f1f8" stroke="#2d2a3f" stroke-width="10"></circle>
-          <circle id="timerRing" cx="95" cy="95" r="82" fill="none" stroke="#a29bfe" stroke-width="14"
-                  stroke-linecap="round" stroke-dasharray="515.2" stroke-dashoffset="0"></circle>
-        </svg>
-        <div class="t" id="timerText">5:00</div>
-      </div>
-      <div class="timer-btns">
-        <button class="btn purple mini" data-min="3">3 мин</button>
-        <button class="btn purple mini" data-min="5">5 мин</button>
-        <button class="btn purple mini" data-min="10">10 мин</button>
-        <button class="btn green mini" id="timerToggle">Старт ▶</button>
-        <button class="btn pink mini" id="timerReset">Сброс ✕</button>
-      </div>
-    </div>
+      function load() {
+        const s = localStorage.getItem(KEY);
+        return s ? JSON.parse(s) : { rate: 300, entries: [] };
+      }
+      function save(data) {
+        localStorage.setItem(KEY, JSON.stringify(data));
+      }
+      function timeToMin(t) {
+        if (!t) return 0;
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + m;
+      }
+      function minToTime(min) {
+        if (min < 0) min = 0;
+        return Math.floor(min / 60) + ' ч ' + String(min % 60).padStart(2, '0') + ' мин';
+      }
+      function minToMoney(min, rate) {
+        return Math.round((min / 60) * rate);
+      }
+      function fmtMoney(v) {
+        return v.toLocaleString('ru-RU') + ' ₽';
+      }
+      function fmtDate(d) {
+        if (!d) return 'Без даты';
+        const date = new Date(d);
+        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+      }
+      function calc(start, lunch, end) {
+        const s = timeToMin(start);
+        const e = timeToMin(end);
+        let worked = e - s - (parseInt(lunch) || 0);
+        if (worked < 0) worked = 0;
+        return worked;
+      }
 
-    <div class="card span2 sh-red">
-      <div class="advice-box">
-        <div class="face" id="adviceFace">💡</div>
-        <div class="txt" id="adviceText">...</div>
-      </div>
-    </div>
-  </div>
-</div>
+      // Превью
+      function calcPreview() {
+        const start = document.getElementById('fStart').value;
+        const lunch = document.getElementById('fLunch').value;
+        const end = document.getElementById('fEnd').value;
+        if (!start || !end) {
+          document.getElementById('preview').style.display = 'none';
+          return;
+        }
+        const data = load();
+        const worked = calc(start, lunch, end);
+        const money = minToMoney(worked, data.rate);
+        document.getElementById('preview').style.display = 'flex';
+        document.getElementById('pvTime').textContent = minToTime(worked);
+        document.getElementById('pvMoney').textContent = fmtMoney(money);
+      }
 
-<script>
-  function load(k, f) { try { return JSON.parse(localStorage.getItem(k)) || f; } catch (e) { return f; } }
-  function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
-  function pad(n) { return String(n).padStart(2, "0"); }
-  function keyOf(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
-
-  var MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
-  var WDAYS = ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
-
-  var clockEl = document.getElementById("clock");
-  var dateEl = document.getElementById("dateLine");
-  var greetEl = document.getElementById("greet");
-  function tickClock() {
-    var d = new Date();
-    clockEl.textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
-    dateEl.textContent = WDAYS[d.getDay()] + ", " + d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear();
-    var h = d.getHours(), g, e;
-    if (h >= 5 && h < 12) { g = "Доброе утро!"; e = "☀️"; }
-    else if (h < 18) { g = "Добрый день!"; e = "🌤"; }
-    else if (h < 23) { g = "Добрый вечер!"; e = "🌆"; }
-    else { g = "Доброй ночи!"; e = "🌙"; }
-    greetEl.textContent = g + " " + e;
-  }
-  tickClock();
-  setInterval(tickClock, 1000);
-
-  var ENGINES = {
-    g: "https://www.google.com/search?q=",
-    y: "https://www.youtube.com/results?search_query=",
-    ya: "https://yandex.ru/search/?text="
-  };
-  function doSearch() {
-    var q = document.getElementById("searchInput").value.trim();
-    if (!q) return;
-    window.open(ENGINES[document.getElementById("engine").value] + encodeURIComponent(q), "_blank");
-  }
-  document.getElementById("searchBtn").addEventListener("click", doSearch);
-  document.getElementById("searchInput").addEventListener("keydown", function (e) { if (e.key === "Enter") doSearch(); });
-
-  var LK = "dash_links";
-  var links = load(LK, null);
-  if (!links) {
-    links = [
-      { name: "YouTube", url: "https://youtube.com", emoji: "▶️" },
-      { name: "ВКонтакте", url: "https://vk.com", emoji: "💬" },
-      { name: "Википедия", url: "https://ru.wikipedia.org", emoji: "📚" },
-      { name: "GitHub", url: "https://github.com", emoji: "🐱" }
-    ];
-    save(LK, links);
-  }
-  var TILE_COLORS = ["var(--c-yellow)","var(--c-teal)","var(--c-pink)","var(--c-purple)","var(--c-orange)","var(--c-green)","var(--c-blue)","var(--c-red)"];
-  function renderLinks() {
-    var grid = document.getElementById("linksGrid");
-    grid.innerHTML = "";
-    if (links.length === 0) {
-      grid.innerHTML = '<div class="empty">Закладок пока нет — добавьте первую ниже 👇</div>';
-      return;
-    }
-    links.forEach(function (l, i) {
-      var a = document.createElement("a");
-      a.className = "link-tile";
-      a.href = l.url;
-      a.target = "_blank";
-      a.style.background = TILE_COLORS[i % TILE_COLORS.length];
-      var e = document.createElement("div");
-      e.className = "e";
-      e.textContent = l.emoji;
-      var n = document.createElement("div");
-      n.className = "n";
-      n.textContent = l.name;
-      var x = document.createElement("div");
-      x.className = "x";
-      x.textContent = "✕";
-      x.title = "Удалить";
-      x.addEventListener("click", function (ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        links.splice(i, 1);
-        save(LK, links);
-        renderLinks();
-      });
-      a.appendChild(e); a.appendChild(n); a.appendChild(x);
-      grid.appendChild(a);
-    });
-  }
-  function addLink() {
-    var emoji = document.getElementById("linkEmoji").value.trim() || "🔗";
-    var name = document.getElementById("linkName").value.trim();
-    var url = document.getElementById("linkUrl").value.trim();
-    if (!name || !url) return;
-    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
-    links.push({ name: name, url: url, emoji: emoji });
-    save(LK, links);
-    document.getElementById("linkEmoji").value = "";
-    document.getElementById("linkName").value = "";
-    document.getElementById("linkUrl").value = "";
-    renderLinks();
-  }
-  document.getElementById("addLinkBtn").addEventListener("click", addLink);
-  renderLinks();
-
-  var EV = "dash_events";
-  var events = load(EV, []);
-  var EV_COLORS = ["var(--c-orange)","var(--c-pink)","var(--c-teal)","var(--c-purple)","var(--c-green)","var(--c-yellow)"];
-  function plural(n) { return n === 1 ? "день" : n < 5 ? "дня" : "дней"; }
-  function renderEvents() {
-    var grid = document.getElementById("eventsGrid");
-    grid.innerHTML = "";
-    if (events.length === 0) {
-      grid.innerHTML = '<div class="empty">Добавьте день рождения, отпуск или экзамен — посчитаем дни 🎉</div>';
-      return;
-    }
-    var today = new Date();
-    today.setHours(0, 0, 0, 0);
-    events.forEach(function (ev, i) {
-      var parts = ev.date.split("-");
-      var d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-      var diff = Math.round((d - today) / 86400000);
-      var card = document.createElement("div");
-      card.className = "event";
-      card.style.background = EV_COLORS[i % EV_COLORS.length];
-      var days = document.createElement("div");
-      days.className = "days";
-      var lbl = document.createElement("div");
-      lbl.className = "lbl";
-      if (diff > 0) { days.textContent = diff; lbl.textContent = plural(diff) + " осталось"; }
-      else if (diff === 0) { days.textContent = "🎉"; lbl.textContent = "уже сегодня!"; }
-      else { days.textContent = Math.abs(diff); lbl.textContent = "дней назад"; }
-      var nm = document.createElement("div");
-      nm.className = "nm";
-      nm.textContent = ev.name;
-      var x = document.createElement("div");
-      x.className = "x";
-      x.textContent = "✕";
-      x.title = "Удалить";
-      x.addEventListener("click", function () {
-        events.splice(i, 1);
-        save(EV, events);
-        renderEvents();
-      });
-      card.appendChild(days); card.appendChild(lbl); card.appendChild(nm); card.appendChild(x);
-      grid.appendChild(card);
-    });
-  }
-  function addEvent() {
-    var name = document.getElementById("eventName").value.trim();
-    var date = document.getElementById("eventDate").value;
-    if (!name || !date) return;
-    events.push({ name: name, date: date });
-    save(EV, events);
-    document.getElementById("eventName").value = "";
-    document.getElementById("eventDate").value = "";
-    renderEvents();
-  }
-  document.getElementById("addEventBtn").addEventListener("click", addEvent);
-  renderEvents();
-
-  var NT = "dash_note";
-  var noteArea = document.getElementById("noteArea");
-  var noteStatus = document.getElementById("noteStatus");
-  noteArea.value = load(NT, "");
-  var noteTimer = null;
-  noteArea.addEventListener("input", function () {
-    clearTimeout(noteTimer);
-    noteTimer = setTimeout(function () {
-      save(NT, noteArea.value);
-      noteStatus.textContent = "Сохранено ✓";
-      setTimeout(function () { noteStatus.textContent = ""; }, 1600);
-    }, 400);
-  });
-
-  var WT = "dash_water";
-  var water = load(WT, { date: keyOf(new Date()), count: 0 });
-  if (water.date !== keyOf(new Date())) {
-    water = { date: keyOf(new Date()), count: 0 };
-    save(WT, water);
-  }
-  var glassesEl = document.getElementById("glasses");
-  function renderWater() {
-    glassesEl.innerHTML = "";
-    for (var i = 0; i < 8; i++) {
-      (function (i) {
-        var b = document.createElement("button");
-        b.className = "glass" + (i < water.count ? " full" : "");
-        b.textContent = "🥛";
-        b.title = (i + 1) + " стакан";
-        b.addEventListener("click", function () {
-          water.count = (i < water.count) ? i : i + 1;
-          water.date = keyOf(new Date());
-          save(WT, water);
-          renderWater();
+      // Добавить запись
+      function addEntry() {
+        const date = document.getElementById('fDate').value;
+        const start = document.getElementById('fStart').value;
+        const lunch = document.getElementById('fLunch').value;
+        const end = document.getElementById('fEnd').value;
+        if (!start || !end) {
+          alert('Укажи начало и конец работы');
+          return;
+        }
+        const data = load();
+        const worked = calc(start, lunch, end);
+        const money = minToMoney(worked, data.rate);
+        data.entries.unshift({
+          id: Date.now(),
+          date: date || new Date().toISOString().split('T')[0],
+          start, lunch, end,
+          worked, money
         });
-        glassesEl.appendChild(b);
-      })(i);
-    }
-    document.getElementById("waterCount").textContent = water.count;
-  }
-  renderWater();
+        save(data);
+        render();
+        // Сброс формы
+        document.getElementById('fDate').value = '';
+        document.getElementById('fStart').value = '09:00';
+        document.getElementById('fLunch').value = '40';
+        document.getElementById('fEnd').value = '18:00';
+        calcPreview();
+      }
 
-  var PD = "dash_payday";
-  var payday = load(PD, { day: 5 });
-  var sel = document.getElementById("paydaySelect");
-  for (var dnum = 1; dnum <= 31; dnum++) {
-    var o = document.createElement("option");
-    o.value = dnum;
-    o.textContent = dnum;
-    sel.appendChild(o);
-  }
-  sel.value = payday.day;
-  function renderPayday() {
-    var now = new Date();
-    var y = now.getFullYear(), m = now.getMonth();
-    var today = new Date(y, m, now.getDate());
-    var dim = new Date(y, m + 1, 0).getDate();
-    var pd = new Date(y, m, Math.min(payday.day, dim));
-    if (pd < today) {
-      var nm = m + 1;
-      var ndim = new Date(y, nm + 1, 0).getDate();
-      pd = new Date(y, nm, Math.min(payday.day, ndim));
-    }
-    document.getElementById("payDays").textContent = Math.round((pd - today) / 86400000);
-    document.getElementById("monthDays").textContent = dim - now.getDate();
-  }
-  sel.addEventListener("change", function () {
-    payday.day = +sel.value;
-    save(PD, payday);
-    renderPayday();
-  });
-  renderPayday();
+      // Удалить запись
+      function deleteEntry(id) {
+        const data = load();
+        data.entries = data.entries.filter(e => e.id !== id);
+        save(data);
+        render();
+      }
 
-  var ring = document.getElementById("timerRing");
-  var timerText = document.getElementById("timerText");
-  var timerDisplay = document.getElementById("timerDisplay");
-  var toggleBtn = document.getElementById("timerToggle");
-  var CIRC = 515.2;
-  var total = 300, left = 300, running = false, endAt = 0, tickId = null;
-  function fmt(s) { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ":" + pad(s % 60); }
-  function paint() {
-    timerText.textContent = fmt(left);
-    ring.style.strokeDashoffset = CIRC * (1 - left / total);
-  }
-  function stopTick() { clearInterval(tickId); tickId = null; running = false; toggleBtn.textContent = "Старт ▶"; }
-  function setTimer(sec) {
-    stopTick();
-    total = sec; left = sec;
-    timerDisplay.classList.remove("done");
-    paint();
-  }
-  function step() {
-    left = (endAt - Date.now()) / 1000;
-    if (left <= 0) {
-      left = 0;
-      paint();
-      stopTick();
-      timerDisplay.classList.add("done");
-      beep();
-      return;
-    }
-    paint();
-  }
-  toggleBtn.addEventListener("click", function () {
-    if (running) {
-      stopTick();
-      return;
-    }
-    if (left <= 0) setTimer(total);
-    running = true;
-    endAt = Date.now() + left * 1000;
-    toggleBtn.textContent = "Пауза ⏸";
-    tickId = setInterval(step, 250);
-  });
-  document.getElementById("timerReset").addEventListener("click", function () {
-    stopTick();
-    timerDisplay.classList.remove("done");
-    left = total;
-    paint();
-  });
-  document.querySelectorAll("[data-min]").forEach(function (b) {
-    b.addEventListener("click", function () { setTimer(+b.dataset.min * 60); });
-  });
-  setTimer(300);
+      // Сохранить ставку
+      function saveRate() {
+        const data = load();
+        data.rate = parseInt(document.getElementById('rate').value) || 0;
+        save(data);
+        render();
+        calcPreview();
+      }
 
-  function beep() {
-    try {
-      var AC = window.AudioContext || window.webkitAudioContext;
-      var ac = new AC();
-      [0, 0.3, 0.6].forEach(function (t) {
-        var o = ac.createOscillator(), g = ac.createGain();
-        o.type = "sine";
-        o.frequency.value = 880;
-        g.gain.setValueAtTime(0.001, ac.currentTime + t);
-        g.gain.exponentialRampToValueAtTime(0.5, ac.currentTime + t + 0.03);
-        g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + 0.25);
-        o.connect(g); g.connect(ac.destination);
-        o.start(ac.currentTime + t);
-        o.stop(ac.currentTime + t + 0.28);
-      });
-    } catch (e) {}
-  }
+      // Очистить всё
+      function clearAll() {
+        if (!confirm('Удалить все записи?')) return;
+        const data = load();
+        data.entries = [];
+        save(data);
+        render();
+      }
 
-  var FACES = ["💡","🌱","🍀","🚀","🌻","🐣","🌟","🧠","🎧","🍀"];
-  var ADVICES = [
-    "Пейте больше воды — организм скажет спасибо 💧",
-    "Пройдитесь 10 минут после обеда 🚶",
-    "Уберите телефон за час до сна 📵",
-    "Сделайте 20 приседаний прямо сейчас 💪",
-    "Откройте окно и проветрите комнату 🌬",
-    "Напишите другу, которого давно не видели ✍️",
-    "Разомните плечи и шею 🧘",
-    "Съешьте что-нибудь вкусное без чувства вины 🍰",
-    "Наведите порядок на столе — голове станет легче 🧹",
-    "Улыбнитесь себе в зеркале 😁",
-    "Похвалите себя за что-нибудь ✨",
-    "Закройте глаза на минуту и подышите глубоко 😌",
-    "Сделайте завтра один маленький шаг к мечте 🐣",
-    "Включите любимую песню погромче 🎵",
-    "Выпейте чашку чая неспешно 🍵",
-    "Потянитесь всем телом, как кошка 🐈",
-    "Сделайте что-то доброе незнакомцу 💛",
-    "Отдохните от экрана 5 минут 👀",
-    "Вспомните три вещи, за которые вы благодарны 🙏",
-    "Полежите 5 минут просто так — это тоже полезно 🛋"
-  ];
-  var now = new Date();
-  var dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-  var idx = dayOfYear % ADVICES.length;
-  document.getElementById("adviceText").textContent = ADVICES[idx];
-  document.getElementById("adviceFace").textContent = FACES[idx % FACES.length];
-</script>
-</body>
+      // Отрисовка
+      function render() {
+        const data = load();
+        document.getElementById('rate').value = data.rate;
+
+        // История
+        const histDiv = document.getElementById('history');
+        if (data.entries.length === 0) {
+          histDiv.innerHTML = '<div class="empty">Пока нет записей. Заполни форму выше и нажми «Добавить в историю».</div>';
+        } else {
+          histDiv.innerHTML = data.entries.map(e => `
+            <div class="h-card">
+              <div class="h-left">
+                <div class="h-date">${fmtDate(e.date)}</div>
+                <div class="h-time">${e.start} — ${e.end} · обед ${e.lunch || 0} мин</div>
+              </div>
+              <div style="display:flex; align-items:center;">
+                <div class="h-right">
+                  <div class="h-hours">${minToTime(e.worked)}</div>
+                  <div class="h-money">${fmtMoney(e.money)}</div>
+                </div>
+                <button class="h-delete" onclick="deleteEntry(${e.id})">✕</button>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // Итоги
+        const totalMin = data.entries.reduce((s, e) => s + e.worked, 0);
+        const totalMoney = data.entries.reduce((s, e) => s + e.money, 0);
+        document.getElementById('totalHours').textContent = minToTime(totalMin);
+        document.getElementById('totalMoney').textContent = fmtMoney(totalMoney);
+      }
+
+      // Старт
+      document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+      render();
+      calcPreview();
+    </script>
+  </body>
 </html>
