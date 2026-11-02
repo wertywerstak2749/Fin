@@ -28,36 +28,41 @@ button{font:inherit;font-size:18px;border:0;cursor:pointer;border-radius:999px;p
 @keyframes up{to{transform:translateY(-115vh) rotate(25deg);opacity:0}}
 #done{display:none}
 #done h1{font-size:30px;margin:14px 0 10px}
+.sms{display:inline-block;margin:12px 5px 0;padding:14px 26px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:18px}
 </style>
 </head>
 <body>
 <main class="card">
-  <div id="ask">
-    <div class="heart">💗</div>
-    <p style="animation-delay:.6s;margin-top:12px">Прости меня, я тебя очень сильно люблю.</p>
-    <p style="animation-delay:2.2s">Я понял, что очень сильно накосячил. Я виноват.</p>
-    <p style="animation-delay:3.8s">Мне правда жаль за всё, что я сделал. Я люблю тебя и хочу всё исправить.</p>
-    <p class="big" style="animation-delay:5.2s">Дашь нам ещё один шанс?</p>
-    <div class="btns">
-      <button id="yes">Да, давай 💖</button>
-      <button id="no">Мне нужно время</button>
-    </div>
-  </div>
-  <div id="done">
-    <div class="heart">💞</div>
-    <h1>Спасибо, что даёшь нам шанс</h1>
-    <p style="opacity:1;transform:none">Обещаю беречь это и стараться каждый день. Люблю тебя.</p>
-  </div>
+<div id="ask">
+<div class="heart">💗</div>
+<p style="animation-delay:.6s;margin-top:12px">Прости меня, я тебя очень сильно люблю.</p>
+<p style="animation-delay:2.2s">Я понял, что очень сильно накосячил. Я виноват.</p>
+<p style="animation-delay:3.8s">Мне правда жаль за всё, что я сделал. Я люблю тебя и хочу всё исправить.</p>
+<p class="big" style="animation-delay:5.2s">Дашь нам ещё один шанс?</p>
+<div class="btns">
+<button id="yes">Да, давай 💖</button>
+<button id="no">Мне нужно время</button>
+</div>
+</div>
+<div id="done">
+<div class="heart">💞</div>
+<h1>Спасибо, что даёшь нам шанс</h1>
+<p style="opacity:1;transform:none">Обещаю беречь это и стараться каждый день. Люблю тебя.</p>
+<a id="sms" class="sms" href="#">Написать мне 💌</a>
+<a class="sms" href="https://t.me/Byhad" target="_blank" rel="noopener">Написать в Telegram ✈️</a>
+</div>
 </main>
 <script>
 var H=["💗","💖","💕","❤️","💘"];
 function fly(n,fast){for(var i=0;i<n;i++){var s=document.createElement("span");s.className="fl";s.textContent=H[Math.floor(Math.random()*H.length)];s.style.left=Math.random()*100+"vw";s.style.fontSize=(14+Math.random()*26)+"px";var d=(fast?3:7)+Math.random()*5;s.style.animationDuration=d+"s";document.body.appendChild(s);setTimeout(function(x){x.remove()},d*1000+100,s)}}
 fly(6);setInterval(function(){fly(1)},900);
-document.getElementById("no").addEventListener("click",function(){document.getElementById("ask").style.display="none";var d=document.getElementById("done");d.querySelector(".heart").textContent="🤍";d.querySelector("h1").textContent="Я понимаю";d.querySelector("p").textContent="Возьми столько времени, сколько нужно. Спасибо, что прочитала.";d.style.display="block"});
+function save(a){try{if(!window.claude)return;claude.use("db").then(function(db){if(!db)return;return db.collection("answers").doc("latest").set({answer:a,at:new Date().toISOString()})}).catch(function(){})}catch(e){}}
+function setSms(t){document.getElementById("sms").href="sms:+79816501307?&body="+encodeURIComponent(t)}
+document.getElementById("no").addEventListener("click",function(){document.getElementById("ask").style.display="none";var d=document.getElementById("done");d.querySelector(".heart").textContent="🤍";d.querySelector("h1").textContent="Я понимаю";d.querySelector("p").textContent="Возьми столько времени, сколько нужно. Спасибо, что прочитала.";d.style.display="block";save("need_time");setSms("Мне нужно немного времени. Я напишу тебе позже.")});
 document.getElementById("yes").addEventListener("click",function(){
 document.getElementById("ask").style.display="none";
 document.getElementById("done").style.display="block";
-fly(60,true)});
+save("yes");setSms("Да, давай 💖 Давай попробуем ещё раз.");fly(60,true)});
 </script>
 </body>
 </html>
