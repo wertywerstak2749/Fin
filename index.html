@@ -131,6 +131,14 @@ label{display:block;color:var(--soft);font-size:14px;margin:0 0 6px}
 #shx{top:calc(env(safe-area-inset-top,0px) + 14px);right:14px}
 #shst{top:calc(env(safe-area-inset-top,0px) + 14px);left:14px;font-size:18px}
 #shl,#shr{top:50%;margin-top:-22px}#shl{left:10px}#shr{right:10px}
+.opt{position:relative}
+.stk{position:absolute;top:-16px;right:16px;width:84px;height:84px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));border:3px dashed rgba(255,255,255,.9);box-shadow:0 8px 18px var(--shadow);transform:rotate(9deg);animation:wig 3.2s ease-in-out infinite;pointer-events:none}
+.stk b{font-size:26px;line-height:1}
+.stk small{font-size:10px;line-height:1.15;margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+@keyframes wig{0%,100%{transform:rotate(6deg) scale(1)}50%{transform:rotate(12deg) scale(1.06)}}
+.pre{display:block;width:fit-content;margin:-6px auto 14px;padding:8px 14px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:15px;font-weight:700}
+.pre[hidden]{display:none}
+.mc.nx{outline:2px dashed var(--accent);outline-offset:-2px;color:var(--accent)}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
 </style>
 </head>
@@ -142,7 +150,7 @@ label{display:block;color:var(--soft);font-size:14px;margin:0 0 6px}
 <div class="wrap">
 <h1>Мы справимся</h1>
 <p class="sub">Выбери, что открыть ↓</p>
-<button class="opt" data-go="dmb"><span class="ic">🪖</span><span><b>ДМБ-календарь</b><small id="mstat">Считаем дни до дембеля</small></span><span class="arr">›</span></button>
+<button class="opt" data-go="dmb"><span class="ic">🪖</span><span><b>ДМБ-календарь</b><small id="mstat">Считаем дни до дембеля</small></span><span class="stk" id="stk"><b id="stkn">ДМБ</b><small id="stkl"></small></span><span class="arr">›</span></button>
 <button class="opt" data-go="card"><span class="ic">💌</span><span><b>Мы справимся</b><small>Открытка, письма, пазл и копилка поцелуев</small></span><span class="arr">›</span></button>
 <p class="foot">Всё, что ты вводишь и отмечаешь, сохраняется на этом устройстве ♥</p>
 </div>
@@ -172,6 +180,7 @@ label{display:block;color:var(--soft);font-size:14px;margin:0 0 6px}
 <div class="box">
 <h2 class="ttl" id="tt">До дембеля</h2>
 <p class="hint" id="rng"></p>
+<div class="pre" id="pre" hidden></div>
 <div class="ring">
 <svg viewBox="0 0 120 120"><defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4a259"/><stop offset="1" stop-color="#e0566f"/></linearGradient></defs><circle class="tr" cx="60" cy="60" r="52" fill="none" stroke-width="9"/><circle class="pg" id="pg" cx="60" cy="60" r="52" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg>
 <div class="mid"><div class="big" id="big">0</div><div class="lbl" id="lbl">дней</div></div>
@@ -269,16 +278,17 @@ var gridKey='';
 function render(first){
  var has=S.start&&S.end;
  $('#setup').classList.toggle('on',!has);$('#main').classList.toggle('on',!!has);$('#edit').hidden=!has;
- if(!has){var t=new Date(),e=new Date(t.getFullYear()+1,t.getMonth(),t.getDate()-1);if(!$('#sd').value)$('#sd').value=iso(t);if(!$('#ed').value)$('#ed').value=iso(e);$('#nm').value=S.name||'';$('#mstat').textContent='Считаем дни до дембеля';return;}
+ if(!has){var t=new Date(),e=new Date(t.getFullYear()+1,t.getMonth(),t.getDate()-1);if(!$('#sd').value)$('#sd').value=iso(t);if(!$('#ed').value)$('#ed').value=iso(e);$('#nm').value=S.name||'';$('#mstat').textContent='Считаем дни до дембеля';$('#stkn').textContent='ДМБ';$('#stkl').textContent='';return;}
  var c=calc();
  $('#tt').textContent=S.name?'До дембеля: '+S.name:'До дембеля';
  $('#rng').textContent=fmt(c.st)+' — '+fmt(c.en);
+ var pre=Math.round((c.st-today0())/DAY),pe=$('#pre');pe.hidden=pre<0;pe.textContent=pre>0?'🪖 До призыва: '+pre+' '+pl(pre,['день','дня','дней']):'🪖 Призыв сегодня';
  setNum($('#big'),c.left,first);
  $('#lbl').textContent=c.left===0?'Дембель! 🎉':pl(c.left,['день','дня','дней'])+' осталось';
  $('#pg').style.strokeDashoffset=326.73*(1-c.pct);
  $('#pct').textContent='Пройдено '+(c.pct*100).toFixed(1).replace('.',',')+'%';
  $('#t1').textContent=c.passed;$('#t2').textContent=Math.floor(c.left/7);$('#t3').textContent=Math.max(0,Math.floor(c.diff/36e5));
- $('#mstat').textContent=c.left===0?'Дембель наступил! 🎉':'Осталось '+c.left+' '+pl(c.left,['день','дня','дней']);
+ menuInfo(c);
  tick();
  var gk=gkey(c);
  if(gk!==gridKey){gridKey=gk;buildGrid(c);buildMs(c);buildEv();buildGal();}
@@ -295,11 +305,24 @@ function buildGrid(c){
  }
  g.innerHTML=h;
 }
+function menuInfo(c){
+ var pre=Math.round((c.st-today0())/DAY),n,l,s;
+ if(pre>0){n=pre;l=pl(pre,['день','дня','дней'])+' до призыва';s='До призыва: '+pre+' '+pl(pre,['день','дня','дней']);}
+ else if(c.left>0){n=c.left;l=pl(c.left,['день','дня','дней'])+' до дембеля';s='Осталось '+c.left+' '+pl(c.left,['день','дня','дней']);}
+ else{n='🎉';l='ДМБ!';s='Дембель наступил! 🎉';}
+ $('#stkn').textContent=n;$('#stkl').textContent=l;$('#mstat').textContent=s;
+}
 function buildMs(c){
- var items=[['Первый день',c.passed>=1],['Половина пути',c.passed>=c.total/2]];
- [100,50,30,10].forEach(function(n){if(c.total>n)items.push(['Осталось '+n+' '+pl(n,['день','дня','дней']),c.left<=n]);});
- items.push(['Дембель 🎉',c.left===0]);
- $('#ms').innerHTML=items.map(function(m){return'<span class="mc'+(m[1]?' ok':'')+'">'+m[0]+'</span>';}).join('');
+ var T=c.total,it=[];
+ function add(p,l){if(p>=1&&p<=T&&!it.some(function(x){return x.p===p;}))it.push({p:p,l:l,ok:c.passed>=p});}
+ add(1,'Первый день');add(7,'Неделя позади');add(30,'Месяц позади');add(100,'100 дней позади');
+ add(Math.round(T/4),'Четверть пути');add(Math.round(T/2),'Половина пути');add(Math.round(T*3/4),'Три четверти пути');
+ add(200,'200 дней позади');add(300,'300 дней позади');
+ [100,50,30,14,7,3,1].forEach(function(n){add(T-n,'Осталось '+n+' '+pl(n,['день','дня','дней']));});
+ add(T,'Дембель 🎉');
+ it.sort(function(a,b){return a.p-b.p;});
+ var nx=true;
+ $('#ms').innerHTML=it.map(function(m){var cl=m.ok?' ok':(nx?' nx':'');if(!m.ok)nx=false;return'<span class="mc'+cl+'">'+m.l+'</span>';}).join('');
 }
 /* помощники */
 function today0(){var n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate());}
@@ -400,7 +423,8 @@ function evText(n,k){
 }
 function buildEv(){
  if(!(S.start&&S.end))return;
- var L=[{n:'Призыв',e:'🪖',d:S.start,k:'start'},{n:'Дембель',e:'🎉',d:S.end,k:'end'}];
+ var L=[{n:'Дембель',e:'🎉',d:S.end,k:'end'}];
+ if(ld(S.start)>=today0())L.push({n:'Призыв',e:'🪖',d:S.start,k:'start'});
  evs().forEach(function(x,i){L.push({n:x.name,e:x.emoji||'📌',d:x.date,k:'c',i:i});});
  L.sort(function(a,b){return ld(a.d)-ld(b.d);});
  $('#evl').innerHTML=L.map(function(x){var n=Math.round((ld(x.d)-today0())/DAY);return'<div class="ev'+(n===0?' now':n<0?' past':'')+'"><span class="ei">'+x.e+'</span><span class="et"><b>'+esc(x.n)+'</b><small>'+fmt(ld(x.d))+'</small></span><span class="en">'+evText(n,x.k)+'</span>'+(x.k==='c'?'<button class="x" data-ev="'+x.i+'" aria-label="Удалить">×</button>':'')+'</div>';}).join('');
