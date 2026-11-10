@@ -199,8 +199,7 @@ label{display:block;color:var(--soft);font-size:14px;margin:0 0 6px}
 <div class="box"><div class="h2">Фотодневник <span id="gcnt" style="color:var(--soft);font-size:14px"></span></div><button class="go" id="today">📷 Фото за сегодня</button><button class="go alt" id="ohist">📖 История снимков</button><div class="gal" id="gal"></div></div>
 <div class="box"><div class="h2">Календарь дней</div><div class="grid" id="grid"></div>
 <p class="hint" style="margin:14px 0 0;font-size:13px">Прошедшие дни зачёркиваются сами. Нажми на день: добавь фото и заметку или отметь ★. 📷 — в этот день есть фото</p></div>
-<div class="row"><button class="chip" id="reset">Сбросить всё</button></div>
-<p class="hint" style="margin:10px 0 0;font-size:13px">Сброс удаляет даты и события. Фото и заметки остаются</p>
+
 </div>
 </div>
 </section>
@@ -280,11 +279,11 @@ function render(first){
  $('#setup').classList.toggle('on',!has);$('#main').classList.toggle('on',!!has);$('#edit').hidden=!has;
  if(!has){var t=new Date(),e=new Date(t.getFullYear()+1,t.getMonth(),t.getDate()-1);if(!$('#sd').value)$('#sd').value=iso(t);if(!$('#ed').value)$('#ed').value=iso(e);$('#nm').value=S.name||'';$('#mstat').textContent='Считаем дни до дембеля';$('#stkn').textContent='ДМБ';$('#stkl').textContent='';return;}
  var c=calc();
- $('#tt').textContent=S.name?'До дембеля: '+S.name:'До дембеля';
+ var pr0=Math.round((c.st-today0())/DAY),tg=pr0>0?'До призыва':'До дембеля';$('#tt').textContent=S.name?tg+': '+S.name:tg;
  $('#rng').textContent=fmt(c.st)+' — '+fmt(c.en);
- var pre=Math.round((c.st-today0())/DAY),pe=$('#pre');pe.hidden=pre<0;pe.textContent=pre>0?'🪖 До призыва: '+pre+' '+pl(pre,['день','дня','дней']):'🪖 Призыв сегодня';
- setNum($('#big'),c.left,first);
- $('#lbl').textContent=c.left===0?'Дембель! 🎉':pl(c.left,['день','дня','дней'])+' осталось';
+ var pre=Math.round((c.st-today0())/DAY),pe=$('#pre');pe.hidden=pre!==0;pe.textContent='🪖 Призыв сегодня';
+ setNum($('#big'),pr0>0?pr0:c.left,first);
+ $('#lbl').textContent=pr0>0?pl(pr0,['день','дня','дней'])+' до призыва':c.left===0?'Дембель! 🎉':pl(c.left,['день','дня','дней'])+' осталось';
  $('#pg').style.strokeDashoffset=326.73*(1-c.pct);
  $('#pct').textContent='Пройдено '+(c.pct*100).toFixed(1).replace('.',',')+'%';
  $('#t1').textContent=c.passed;$('#t2').textContent=Math.floor(c.left/7);$('#t3').textContent=Math.max(0,Math.floor(c.diff/36e5));
@@ -294,8 +293,8 @@ function render(first){
  if(gk!==gridKey){gridKey=gk;buildGrid(c);buildMs(c);buildEv();buildGal();}
 }
 function tick(){
- if(!(S.start&&S.end))return;var c=calc(),d=Math.max(0,c.diff);
- $('#live').textContent=c.diff<=0?'Ты дождался ♥':Math.floor(d/DAY)+' дн '+pad(Math.floor(d%DAY/36e5))+' ч '+pad(Math.floor(d%36e5/6e4))+' мин '+pad(Math.floor(d%6e4/1e3))+' с';
+ if(!(S.start&&S.end))return;var c=calc(),pr=c.st-c.now,d=Math.max(0,pr>0?pr:c.diff);
+ $('#live').textContent=c.diff<=0&&pr<=0?'Ты дождался ♥':(pr>0?'До призыва: ':'')+Math.floor(d/DAY)+' дн '+pad(Math.floor(d%DAY/36e5))+' ч '+pad(Math.floor(d%36e5/6e4))+' мин '+pad(Math.floor(d%6e4/1e3))+' с';
 }
 function buildGrid(c){
  var g=$('#grid'),h='';
@@ -448,14 +447,6 @@ $('#save').addEventListener('click',function(){
 });
 $('#edit').addEventListener('click',function(){$('#sd').value=S.start;$('#ed').value=S.end;$('#nm').value=S.name||'';$('#setup').classList.add('on');$('#main').classList.remove('on');$('#edit').hidden=true;
  var sv=$('#save');sv.textContent='Сохранить';});
-var rt;
-$('#reset').addEventListener('click',function(){
- var b=this;
- if(b.getAttribute('data-ask')){S={start:'',end:'',name:'',marks:{}};try{localStorage.removeItem(KEY);}catch(e){}
-  $('#sd').value='';$('#ed').value='';gridKey='';b.removeAttribute('data-ask');b.textContent='Сбросить всё';render(true);toast('Всё сброшено');return;}
- b.setAttribute('data-ask','1');b.textContent='Точно сбросить? Нажми ещё раз';
- clearTimeout(rt);rt=setTimeout(function(){b.removeAttribute('data-ask');b.textContent='Сбросить всё';},3500);
-});
 
 setInterval(function(){tick();if(S.start&&S.end){var c=calc();if(gkey(c)!==gridKey)render(false);}},1000);
 render(false);
